@@ -1,6 +1,7 @@
 module Main (main) where
 
-import Rhea (run)
+import qualified Rhea (run)
 
 main :: IO ()
-main = run
+main = 
+    Rhea.run
