@@ -26,6 +26,11 @@ source-repository head
 library
   exposed-modules:
       Core.Application
+      Graphics.Color
+      Graphics.OpenGL.Renderer
+      Graphics.Rendering.Mesh
+      Graphics.Rendering.Renderer
+      Graphics.Rendering.Shape
       Graphics.Window
       Rhea
   other-modules:

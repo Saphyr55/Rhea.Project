@@ -36,7 +36,7 @@ destroy win = do
 swap :: Window -> IO ()
 swap window = 
   GLFW.swapBuffers $ handler window
-  
+
 closeCallback :: Window -> IO ()
 closeCallback window = 
   GLFW.setWindowCloseCallback
