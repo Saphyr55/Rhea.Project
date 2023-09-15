@@ -26,11 +26,14 @@ source-repository head
 library
   exposed-modules:
       Core.Application
+      Core.Common
+      Core.Context
+      Core.Resources
       Graphics.Color
+      Graphics.OpenGL.OpenGL
       Graphics.OpenGL.Renderer
-      Graphics.Rendering.Mesh
       Graphics.Rendering.Renderer
-      Graphics.Rendering.Shape
+      Graphics.Rendering.Vertex
       Graphics.Window
       Rhea
   other-modules:
@@ -40,8 +43,10 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       GLFW-b
-    , OpenGL
+    , OpenGLRaw
     , base >=4.7 && <5
+    , binary >=0.7.5
+    , bytestring >=0.11.5.1
   default-language: Haskell2010
 
 executable RheaProject-exe
@@ -53,9 +58,11 @@ executable RheaProject-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       GLFW-b
-    , OpenGL
+    , OpenGLRaw
     , RheaProject
     , base >=4.7 && <5
+    , binary >=0.7.5
+    , bytestring >=0.11.5.1
   default-language: Haskell2010
 
 test-suite RheaProject-test
@@ -68,7 +75,9 @@ test-suite RheaProject-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       GLFW-b
-    , OpenGL
+    , OpenGLRaw
     , RheaProject
     , base >=4.7 && <5
+    , binary >=0.7.5
+    , bytestring >=0.11.5.1
   default-language: Haskell2010

@@ -1,4 +1,4 @@
-module Graphics.Color where
+module Graphics.Color ( Color(..), rgba, red, green, blue, alpha ) where
 
 type RGBA = (Float, Float, Float, Float)
 
@@ -10,6 +10,7 @@ data Color =
   | White
   | Black
   | Charcoal
+  deriving ( Show, Eq )
 
 rgba :: Color -> RGBA
 rgba color = case color of

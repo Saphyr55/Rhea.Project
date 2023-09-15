@@ -9,7 +9,7 @@ module Graphics.Window
   ) where
 
 import qualified Graphics.UI.GLFW as GLFW
-import System.Exit (exitSuccess)
+import System.Exit ( exitSuccess )
 
 data VideoMode = VideoMode
     { width  :: Int,

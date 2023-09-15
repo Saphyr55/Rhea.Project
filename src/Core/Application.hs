@@ -7,12 +7,10 @@ type Handler c = c -> IO c
 
 hints :: [GLFW.WindowHint]
 hints =
-  [
-    GLFW.WindowHint'ContextVersionMajor 4,
+  [ GLFW.WindowHint'ContextVersionMajor 4,
     GLFW.WindowHint'ContextVersionMinor 5,
     GLFW.WindowHint'OpenGLProfile GLFW.OpenGLProfile'Core,
-    GLFW.WindowHint'Resizable True
-  ]
+    GLFW.WindowHint'Resizable True ]
 
 initApp :: IO ()
 initApp = do
@@ -24,8 +22,8 @@ initApp = do
 run :: c -> Handler c -> (c -> IO ()) -> IO ()
 run context handler onFinish = do
   auxRun context handler
-  GLFW.terminate
   onFinish context
+  GLFW.terminate
 
 auxRun :: c -> Handler c -> IO ()
 auxRun context handler = do

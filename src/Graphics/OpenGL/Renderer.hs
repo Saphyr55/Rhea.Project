@@ -1,23 +1,25 @@
 {-# LANGUAGE InstanceSigs #-}
 module Graphics.OpenGL.Renderer where
 
+import Graphics.GL
+import Graphics.OpenGL.OpenGL
+import Graphics.Color
 import Graphics.Rendering.Renderer ( RenderSystem(..) )
-import Graphics.Color ( Color, alpha, red, green, blue )
-import qualified Graphics.Rendering.OpenGL as GL
 
-data Renderer = GLRenderer 
+data GLRenderer = GLRenderer
 
-instance RenderSystem Renderer where
+instance RenderSystem GLRenderer where
 
-  clearColor :: Renderer -> Color -> IO ()
-  clearColor _ c = do
-    GL.clearColor GL.$= 
-      GL.Color4 
-        ( red   c )
-        ( green c )
-        ( blue  c )
-        ( alpha c )
+  clearColor :: GLRenderer -> Color -> IO ()
+  clearColor _ c =
+    glClearColor
+      (mapGlfloat $ red c) 
+      (mapGlfloat $ green c)
+      (mapGlfloat $ blue c) 
+      (mapGlfloat $ alpha c)
 
-  clear :: Renderer -> IO ()
-  clear _ = do
-    GL.clear [GL.ColorBuffer]
+  clear :: GLRenderer -> IO ()
+  clear _ = 
+    glClear GL_COLOR_BUFFER_BIT
+    
+
