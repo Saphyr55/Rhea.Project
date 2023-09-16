@@ -1,7 +1,7 @@
 module Graphics.OpenGL.VertexArray 
   (
-    VertexArrayObject,
-    makeVao, 
+    VertexArray,
+    makeVertexArray, 
     bindVao, 
     unbindVao, 
     deleteVao
@@ -10,19 +10,19 @@ module Graphics.OpenGL.VertexArray
 import Foreign
 import Graphics.GL
 
-newtype VertexArrayObject = VertexArrayObject 
+newtype VertexArray = VertexArray
   (Ptr GLuint)
 
-makeVao :: IO VertexArrayObject
-makeVao = do
+makeVertexArray :: IO VertexArray
+makeVertexArray = do
   vaoPtr <- malloc
   glGenVertexArrays 1 vaoPtr
   vao <- peek vaoPtr
   glBindVertexArray vao
-  return $ VertexArrayObject vaoPtr
+  return $ VertexArray vaoPtr
 
-bindVao :: VertexArrayObject -> IO ()
-bindVao (VertexArrayObject vao) = do
+bindVao :: VertexArray -> IO ()
+bindVao (VertexArray vao) = do
   value <- peek vao
   glBindVertexArray value
 
@@ -30,6 +30,6 @@ unbindVao :: IO ()
 unbindVao =
   glBindVertexArray 0
 
-deleteVao :: VertexArrayObject -> IO ()
-deleteVao  (VertexArrayObject vao) =
+deleteVao :: VertexArray -> IO ()
+deleteVao  (VertexArray vao) =
   glDeleteVertexArrays 1 vao

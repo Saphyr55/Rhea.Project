@@ -8,26 +8,28 @@ import Graphics.Rendering.Renderer
 import Graphics.OpenGL.Renderer
 import Graphics.Color
 import Core.Common
-import Foreign
 import Graphics.GL
 import Graphics.OpenGL.VertexArray
 import Core.Resources
 import Graphics.Rendering.Shader
 import Graphics.OpenGL.Shader
-import GHC.TypeLits (Nat)
 import Graphics.OpenGL.Buffer
-import Core.Closeable (close)
+import Core.Closeable
+import GHC.TypeLits
+import GHC.Float
+import Foreign
+import GHC.Stable (StablePtr(StablePtr))
 
 data Context = Context
   { window :: Window,
     renderer :: GLRenderer,
     shader :: GLShader,
-    vao :: VertexArrayObject,
+    vao :: VertexArray,
     vbo :: Buffer ,
     ebo :: Buffer }
 
 type VEBObject = 
-  (VertexArrayObject, Buffer, Buffer)
+  (VertexArray, Buffer, Buffer)
 
 verticies :: [Float]
 verticies =
@@ -55,13 +57,11 @@ defaultShader = do
 genVertecies :: IO VEBObject
 genVertecies = do
 
-  vao_ <- makeVao
+  vao_ <- makeVertexArray
   vbo_ <- makeVertexBuffer verticies
   ebo_ <- makeElementBuffer indices
 
-  linkBuffer'offset vbo_ 0 3
-    $ fromIntegral
-    $ sizeOf (0.0 :: GLfloat) * 3
+  linkBuffer vbo_ 0 3 (fromIntegral $ sizeOf (0.0 :: GLfloat) * 3) 0
 
   return (vao_, vbo_, ebo_)
 
@@ -72,6 +72,17 @@ mainHandler context = do
   clearColor $= renderer context $ Charcoal
 
   useShader $ shader context
+
+  Just time <- A.getTime
+  let greenValue = 0.5 + (sin time / 2)  
+  location <- uniformLocation $= shader context $ "uColor"
+  glUniform4f 
+    (fromIntegral location) 
+    0.0 
+    (double2Float greenValue) 
+    0.0 
+    1.0
+
   bindVao $ vao context
   glDrawElements 
     GL_TRIANGLES 

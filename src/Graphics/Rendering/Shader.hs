@@ -17,3 +17,5 @@ class Shader t where
   useShader :: t -> IO ()
 
   deleteShader :: t -> IO ()
+
+  uniformLocation :: t -> String -> IO Int

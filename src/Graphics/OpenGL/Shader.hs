@@ -1,4 +1,5 @@
 {-# LANGUAGE InstanceSigs #-}
+
 module Graphics.OpenGL.Shader
   (
     Shader(..),
@@ -10,9 +11,10 @@ import Graphics.GL
 import Foreign
 import Foreign.C.String
 import Control.Monad
+import Core.Common
 
-newtype GLShader = GLShader
-  { handler :: GLuint }
+newtype GLShader =
+  GLShader { handler :: GLuint }
 
 data GLShaderPart = GLShaderPart GLuint ShaderType
 
@@ -34,6 +36,15 @@ instance Shader GLShader where
   deleteShader s =
      glDeleteProgram $ handler s
 
+  uniformLocation :: GLShader -> String -> IO Int
+  uniformLocation shader name = do 
+    withCString name $ 
+      \n -> do 
+        location <- glGetUniformLocation 
+          $= handler shader 
+          $ castPtr n
+        return $ fromIntegral location
+
 makeProgram :: [GLShaderPart] -> IO GLShader
 makeProgram parts = do
   prog <- glCreateProgram
@@ -41,7 +52,7 @@ makeProgram parts = do
   glLinkProgram prog
   let p = GLShader prog
   checkProgram p
-  
+
   return p
 
 attachShader :: GLuint -> [GLShaderPart] -> IO ()

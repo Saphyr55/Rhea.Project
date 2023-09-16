@@ -32,8 +32,8 @@ bindBuffer (VertexBuffer vbo) = do
   glBindBuffer GL_ARRAY_BUFFER value
 
 bindBuffer (ElementBuffer ebo) = do
-  ebo_ <- peek ebo
-  glBindBuffer GL_ELEMENT_ARRAY_BUFFER ebo_
+  value <- peek ebo
+  glBindBuffer GL_ELEMENT_ARRAY_BUFFER value
 
 unbindBuffer :: Buffer -> IO ()
 unbindBuffer (ElementBuffer _) =
@@ -51,23 +51,20 @@ makeBufferPtr enum len listPtr = do
   glBufferData enum len listPtr GL_STATIC_DRAW
   return bufPtr
 
-linkBuffer :: Buffer -> Nat -> Nat -> Nat -> Ptr a -> IO ()
+linkBuffer :: Buffer -> Nat -> Nat -> Nat -> Int -> IO ()
 linkBuffer buf layout numComp stride offset = do
   bindBuffer buf
+  offsetPtr <- new offset
   glVertexAttribPointer
     (fromIntegral layout)
     (fromIntegral numComp)
     GL_FLOAT
     GL_FALSE
     (fromIntegral stride)
-    offset
+    offsetPtr
   glEnableVertexAttribArray
     (fromIntegral layout)
   unbindBuffer buf
-
-linkBuffer'offset :: Buffer -> Nat -> Nat -> Nat -> IO ()
-linkBuffer'offset buf layout numComp stride =
-  linkBuffer buf layout numComp stride nullPtr
 
 instance Closeable Buffer where
   

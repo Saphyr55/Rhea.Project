@@ -1,4 +1,4 @@
-module Core.Application (initApp, run) where
+module Core.Application (initApp, run, getTime) where
 
 import Control.Monad (forever)
 import qualified Graphics.UI.GLFW as GLFW
@@ -24,6 +24,9 @@ run context handler onFinish = do
   auxRun context handler
   onFinish context
   GLFW.terminate
+
+getTime :: IO (Maybe Double)
+getTime = GLFW.getTime
 
 auxRun :: c -> Handler c -> IO ()
 auxRun context handler = do
