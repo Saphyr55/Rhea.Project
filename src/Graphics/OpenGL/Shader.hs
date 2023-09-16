@@ -11,7 +11,7 @@ import Foreign
 import Foreign.C.String
 import Control.Monad
 
-data GLShader = GLShader
+newtype GLShader = GLShader
   { handler :: GLuint }
 
 data GLShaderPart = GLShaderPart GLuint ShaderType
@@ -22,12 +22,17 @@ instance Shader GLShader where
   makeShader infos = do
     parts <- mapM makeShaderPart infos
     prog <- makeProgram parts
-    use prog
+    useShader prog
+    deleteShaders parts
     return prog
 
-  use :: GLShader -> IO ()
-  use s =
+  useShader :: GLShader -> IO ()
+  useShader s =
     glUseProgram $ handler s
+
+  deleteShader :: GLShader -> IO ()
+  deleteShader s =
+     glDeleteProgram $ handler s
 
 makeProgram :: [GLShaderPart] -> IO GLShader
 makeProgram parts = do
@@ -36,6 +41,7 @@ makeProgram parts = do
   glLinkProgram prog
   let p = GLShader prog
   checkProgram p
+  
   return p
 
 attachShader :: GLuint -> [GLShaderPart] -> IO ()
@@ -51,6 +57,11 @@ makeShaderPart (typ, source) = do
   compileShader shader
   checkShader shader
   return shader
+
+deleteShaders :: [GLShaderPart] -> IO ()
+deleteShaders parts =
+  forM_ parts $ \(GLShaderPart h _) ->
+    glDeleteShader h
 
 toGLType :: ShaderType -> GLuint
 toGLType FragmentShader = GL_FRAGMENT_SHADER

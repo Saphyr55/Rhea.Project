@@ -33,6 +33,7 @@ library
       Core.Context
       Core.Resources
       Graphics.Color
+      Graphics.OpenGL.ElementBuffer
       Graphics.OpenGL.Renderer
       Graphics.OpenGL.Shader
       Graphics.OpenGL.VertexArray

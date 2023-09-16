@@ -10,8 +10,8 @@ module Graphics.OpenGL.VertexArray
 import Foreign
 import Graphics.GL
 
-data VertexArrayObject = VertexArrayObject
-  { handler :: Ptr GLuint}
+newtype VertexArrayObject = VertexArrayObject 
+  (Ptr GLuint)
 
 makeVao :: IO VertexArrayObject
 makeVao = do
@@ -22,8 +22,8 @@ makeVao = do
   return $ VertexArrayObject vaoPtr
 
 bindVao :: VertexArrayObject -> IO ()
-bindVao vao = do
-  value <- peek $ handler vao
+bindVao (VertexArrayObject vao) = do
+  value <- peek vao
   glBindVertexArray value
 
 unbindVao :: IO ()
@@ -31,5 +31,5 @@ unbindVao =
   glBindVertexArray 0
 
 deleteVao :: VertexArrayObject -> IO ()
-deleteVao vao =
-  glDeleteVertexArrays 1 $ handler vao
+deleteVao  (VertexArrayObject vao) =
+  glDeleteVertexArrays 1 vao

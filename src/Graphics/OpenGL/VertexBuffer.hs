@@ -5,14 +5,15 @@ module Graphics.OpenGL.VertexBuffer
     linkVbo,
     bindVbo,
     unbindVbo,
-    deleteVbo
+    deleteVbo,
+    linkVbo'offset,
   ) where
 
 import Graphics.GL
 import Foreign
 import GHC.TypeLits (Nat)
 
-data VertexBufferObject = VertexBufferObject
+newtype VertexBufferObject = VertexBufferObject 
   { handler :: Ptr GLuint }
 
 makeVbo :: [Float] -> IO VertexBufferObject
@@ -26,8 +27,8 @@ makeVbo verticies = do
   glBufferData GL_ARRAY_BUFFER verticesSize (castPtr verticesPtr) GL_STATIC_DRAW
   return $ VertexBufferObject vboPtr
 
-linkVbo :: VertexBufferObject -> Nat -> Nat -> Nat -> IO ()
-linkVbo vbo layout numComp stride = do
+linkVbo :: VertexBufferObject -> Nat -> Nat -> Nat -> Ptr a -> IO ()
+linkVbo vbo layout numComp stride offset = do
   bindVbo vbo
   glVertexAttribPointer 
     (fromIntegral layout) 
@@ -35,15 +36,19 @@ linkVbo vbo layout numComp stride = do
     GL_FLOAT
     GL_FALSE 
     (fromIntegral stride) 
-    nullPtr
-  glEnableVertexAttribArray 0
+    offset
+  glEnableVertexAttribArray 
+    (fromIntegral layout)
   unbindVbo
+
+linkVbo'offset :: VertexBufferObject -> Nat -> Nat -> Nat -> IO ()
+linkVbo'offset vbo layout numComp stride = 
+  linkVbo vbo layout numComp stride nullPtr
 
 bindVbo :: VertexBufferObject -> IO ()
 bindVbo vbo = do
   value <- peek $ handler vbo
   glBindBuffer GL_ARRAY_BUFFER value
-
 
 unbindVbo :: IO ()
 unbindVbo = 

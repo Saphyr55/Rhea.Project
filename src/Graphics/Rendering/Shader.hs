@@ -1,4 +1,8 @@
-module Graphics.Rendering.Shader where
+module Graphics.Rendering.Shader 
+  ( Shader (..),
+    ShaderType (..),
+    ShaderInfo
+  ) where
 
 data ShaderType =
     VertexShader
@@ -10,4 +14,6 @@ class Shader t where
 
   makeShader :: [ShaderInfo] -> IO t
 
-  use :: t -> IO ()
+  useShader :: t -> IO ()
+
+  deleteShader :: t -> IO ()
