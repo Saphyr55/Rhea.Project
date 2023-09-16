@@ -37,6 +37,10 @@ ghc-options:
 - -Wpartial-fields
 - -Wredundant-constraints
 
+data-files: 
+- res/Shaders/Default.frag
+- res/Shaders/Default.vert
+
 library:
   source-dirs: src
 

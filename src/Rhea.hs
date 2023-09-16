@@ -10,66 +10,90 @@ import Graphics.Color
 import Core.Common
 import Foreign
 import Graphics.GL
+import Graphics.OpenGL.VertexBuffer (makeVbo, linkVbo, deleteVbo, VertexBufferObject)
+import Graphics.OpenGL.VertexArray
+import Core.Resources
+import Graphics.Rendering.Shader
+import Graphics.OpenGL.Shader
 
 data Context = Context
   { window :: Window,
     renderer :: GLRenderer,
-    voa :: GLuint }
+    shader :: GLShader,
+    vao :: VertexArrayObject,
+    vbo :: VertexBufferObject }
 
-genSomething :: IO GLuint
-genSomething = do
-  let verticies = [
-        -0.5, -0.5, 0.0, -- first vertex
-         0.5, -0.5, 0.0, -- second vertex
-         0.0,  0.5, 0.0 -- third vertex
-        ] :: [GLfloat]
-  let verticesSize = fromIntegral $ sizeOf (0.0 :: GLfloat) * length verticies
-  verticesPtr <- newArray verticies
-  vboPtr <- malloc
-  glGenBuffers 1 vboPtr
-  vbo <- peek vboPtr
-  glBindBuffer GL_ARRAY_BUFFER vbo
-  glBufferData GL_ARRAY_BUFFER verticesSize (castPtr verticesPtr) GL_STATIC_DRAW
-  vaoP <- malloc
-  glGenVertexArrays 1 vaoP
-  vao <- peek vaoP
-  glBindVertexArray vao
-  glBindBuffer GL_ARRAY_BUFFER vbo
-  glBufferData GL_ARRAY_BUFFER verticesSize (castPtr verticesPtr) GL_STATIC_DRAW
-  let threeFloats = fromIntegral $ sizeOf (0.0 :: GLfloat) * 3
-  glVertexAttribPointer 0 3 GL_FLOAT GL_FALSE threeFloats nullPtr
-  glEnableVertexAttribArray 0
-  return vao
+verticies :: [Float]
+verticies =
+  [ -0.5, -0.5, 0.0, -- first vertex
+     0.5, -0.5, 0.0, -- second vertex
+     0.0,  0.5, 0.0  -- third vertex
+  ]
 
-videoMode :: VideoMode
-videoMode = VideoMode 1080 720 "Demo"
+defaultShader :: IO GLShader
+defaultShader = do
+  resVert <- readResource "/Shaders/Default.vert"
+  resFrag <- readResource "/Shaders/Default.frag"
+  makeShader 
+    [ (VertexShader, resVert),
+      (FragmentShader, resFrag) 
+    ]
+
+genVertecies :: IO (VertexArrayObject, VertexBufferObject)
+genVertecies = do
+  vbo_ <- makeVbo verticies
+  vao_ <- makeVao
+  linkVbo vbo_ 0 3
+    $ fromIntegral
+    $ sizeOf (0.0 :: GLfloat) * 3
+  return (vao_, vbo_)
+
+mainVideoMode :: VideoMode
+mainVideoMode =
+  VideoMode 1080 720 "Demo"
 
 mainHandler :: Context -> IO Context
 mainHandler context = do
-  
+
   clearColor $= renderer context $ Charcoal
   clear $ renderer context
 
-  glBindVertexArray $ voa context
+  bindVao $ vao context
   glDrawArrays GL_TRIANGLES 0 3
-  glBindVertexArray 0
+  unbindVao
+
+  viewport
+    $= renderer context
+    $ window context
 
   swap $ window context
-  return context
+
+  newWindow <- updateWindow $ window context
+
+  return $ Context
+    newWindow
+    (renderer context)
+    (shader context)
+    (vao context)
+    (vbo context)
 
 mainContext :: IO (Maybe Context)
 mainContext = do
-  m <- makeWindow videoMode
+  m <- makeWindow mainVideoMode
   contextualizeWindow m
 
 onFinish :: Context -> IO ()
 onFinish context = do
+  deleteVbo $ vbo context
+  deleteVao $ vao context
   destroy $ window context
 
 contextualizeWindow :: Maybe Window -> IO (Maybe Context)
 contextualizeWindow Nothing = return Nothing
 contextualizeWindow (Just w) = do
-  Just . Context w GLRenderer <$> genSomething
+  (vao_, vbo_) <- genVertecies
+  s <- defaultShader 
+  return $ Just $ Context w GLRenderer s vao_ vbo_
 
 contextual :: Maybe Context -> IO ()
 contextual Nothing = return ()

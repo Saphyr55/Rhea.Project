@@ -5,7 +5,8 @@ module Graphics.Window
     makeWindow,
     destroy,
     swap,
-    closeCallback
+    closeCallback,
+    updateWindow
   ) where
 
 import qualified Graphics.UI.GLFW as GLFW
@@ -19,7 +20,7 @@ data VideoMode = VideoMode
 
 data Window = Window
     { handler   :: GLFW.Window,
-      mode      :: VideoMode }
+      videoMode :: VideoMode }
 
 makeWindow :: VideoMode -> IO (Maybe Window)
 makeWindow mode = do
@@ -34,11 +35,20 @@ destroy win = do
     GLFW.destroyWindow (handler win)
 
 swap :: Window -> IO ()
-swap window = 
+swap window =
   GLFW.swapBuffers $ handler window
 
+updateWindow :: Window -> IO Window
+updateWindow window = do
+  (w, h) <- GLFW.getWindowSize $ handler window
+  return
+    $ Window (handler window)
+    $ VideoMode w h
+    $ title
+    $ videoMode window
+
 closeCallback :: Window -> IO ()
-closeCallback window = 
+closeCallback window =
   GLFW.setWindowCloseCallback
     (handler window)
     (Just

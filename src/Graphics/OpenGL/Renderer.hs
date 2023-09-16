@@ -2,24 +2,33 @@
 module Graphics.OpenGL.Renderer where
 
 import Graphics.GL
-import Graphics.OpenGL.OpenGL
 import Graphics.Color
 import Graphics.Rendering.Renderer ( RenderSystem(..) )
+import Data.Bits
+import Graphics.Window (Window(..), VideoMode (..))
 
 data GLRenderer = GLRenderer
 
 instance RenderSystem GLRenderer where
 
+  viewport :: GLRenderer -> Window -> IO ()
+  viewport _ window =  
+    glViewport 0 0
+      (fromIntegral $ width $ videoMode window)
+      (fromIntegral $ height $ videoMode window)
+
   clearColor :: GLRenderer -> Color -> IO ()
   clearColor _ c =
     glClearColor
-      (mapGlfloat $ red c) 
-      (mapGlfloat $ green c)
-      (mapGlfloat $ blue c) 
-      (mapGlfloat $ alpha c)
+      (red c   :: GLfloat)
+      (green c :: GLfloat)
+      (blue c  :: GLfloat)
+      (alpha c :: GLfloat)
 
   clear :: GLRenderer -> IO ()
   clear _ = 
-    glClear GL_COLOR_BUFFER_BIT
+    glClear $ 
+      GL_COLOR_BUFFER_BIT .|.
+      GL_DEPTH_BUFFER_BIT 
     
 

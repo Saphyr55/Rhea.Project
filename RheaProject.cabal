@@ -18,6 +18,9 @@ build-type:     Simple
 extra-source-files:
     README.md
     CHANGELOG.md
+data-files:
+    res/Shaders/Default.frag
+    res/Shaders/Default.vert
 
 source-repository head
   type: git
@@ -30,9 +33,12 @@ library
       Core.Context
       Core.Resources
       Graphics.Color
-      Graphics.OpenGL.OpenGL
       Graphics.OpenGL.Renderer
+      Graphics.OpenGL.Shader
+      Graphics.OpenGL.VertexArray
+      Graphics.OpenGL.VertexBuffer
       Graphics.Rendering.Renderer
+      Graphics.Rendering.Shader
       Graphics.Rendering.Vertex
       Graphics.Window
       Rhea
