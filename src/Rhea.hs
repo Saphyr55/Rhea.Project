@@ -10,23 +10,24 @@ import Graphics.Color
 import Core.Common
 import Foreign
 import Graphics.GL
-import Graphics.OpenGL.VertexBuffer
-import Graphics.OpenGL.ElementBuffer
 import Graphics.OpenGL.VertexArray
 import Core.Resources
 import Graphics.Rendering.Shader
 import Graphics.OpenGL.Shader
 import GHC.TypeLits (Nat)
+import Graphics.OpenGL.Buffer
+import Core.Closeable (close)
 
 data Context = Context
   { window :: Window,
     renderer :: GLRenderer,
     shader :: GLShader,
     vao :: VertexArrayObject,
-    vbo :: VertexBufferObject,
-    ebo :: ElementBufferObject }
+    vbo :: Buffer ,
+    ebo :: Buffer }
 
-type VEBObject = (VertexArrayObject, VertexBufferObject, ElementBufferObject)
+type VEBObject = 
+  (VertexArrayObject, Buffer, Buffer)
 
 verticies :: [Float]
 verticies =
@@ -55,10 +56,10 @@ genVertecies :: IO VEBObject
 genVertecies = do
 
   vao_ <- makeVao
-  vbo_ <- makeVbo verticies
-  ebo_ <- makeEbo indices
+  vbo_ <- makeVertexBuffer verticies
+  ebo_ <- makeElementBuffer indices
 
-  linkVbo'offset vbo_ 0 3
+  linkBuffer'offset vbo_ 0 3
     $ fromIntegral
     $ sizeOf (0.0 :: GLfloat) * 3
 
@@ -101,9 +102,9 @@ mainContext = do
 onFinish :: Context -> IO ()
 onFinish context = do
   deleteShader $ shader context
-  deleteVbo $ vbo context
+  close $ vbo context
+  close $ ebo context
   deleteVao $ vao context
-  deleteEbo $ ebo context
   destroy $ window context
 
 contextualizeWindow :: Maybe Window -> IO (Maybe Context)

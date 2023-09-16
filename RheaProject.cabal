@@ -29,15 +29,15 @@ source-repository head
 library
   exposed-modules:
       Core.Application
+      Core.Closeable
       Core.Common
       Core.Context
       Core.Resources
       Graphics.Color
-      Graphics.OpenGL.ElementBuffer
+      Graphics.OpenGL.Buffer
       Graphics.OpenGL.Renderer
       Graphics.OpenGL.Shader
       Graphics.OpenGL.VertexArray
-      Graphics.OpenGL.VertexBuffer
       Graphics.Rendering.Renderer
       Graphics.Rendering.Shader
       Graphics.Rendering.Vertex
