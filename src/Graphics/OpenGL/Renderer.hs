@@ -2,7 +2,7 @@
 module Graphics.OpenGL.Renderer where
 
 import Graphics.GL
-import Graphics.Color
+import Graphics.Color ( alpha, blue, green, red, Color )
 import Graphics.Rendering.Renderer ( RenderSystem(..) )
 import Data.Bits
 import Graphics.Window (Window(..), VideoMode (..))

@@ -6,15 +6,17 @@ import Graphics.GL
 import Foreign
 import Core.Closeable
 import GHC.TypeLits
+import Data.Monoid
+import Data.Void (Void)
 
 data Buffer = 
-    VertexBuffer (Ptr GLuint) 
+    VertexBuffer (Ptr GLuint)
   | ElementBuffer (Ptr GLuint)
 
 makeVertexBuffer :: [Float] -> IO Buffer
-makeVertexBuffer v = do
-  let vSize = fromIntegral $ sizeOf (0 :: GLfloat) * length v
-  vPtr <- newArray v
+makeVertexBuffer verticies = do
+  let vSize = fromIntegral $ sizeOf (0 :: GLfloat) * length verticies 
+  vPtr <- newArray verticies 
   ptr <- makeBufferPtr GL_ARRAY_BUFFER vSize vPtr
   return $ VertexBuffer ptr
 
@@ -48,20 +50,19 @@ makeBufferPtr enum len listPtr = do
   glGenBuffers 1 bufPtr
   buf <- peek bufPtr
   glBindBuffer enum buf
-  glBufferData enum len listPtr GL_STATIC_DRAW
+  glBufferData enum len (castPtr listPtr) GL_STATIC_DRAW
   return bufPtr
 
-linkBuffer :: Buffer -> Nat -> Nat -> Nat -> Int -> IO ()
+linkBuffer :: Buffer -> Nat -> Nat -> Nat -> Ptr Void -> IO ()
 linkBuffer buf layout numComp stride offset = do
   bindBuffer buf
-  offsetPtr <- new offset
   glVertexAttribPointer
     (fromIntegral layout)
     (fromIntegral numComp)
     GL_FLOAT
     GL_FALSE
     (fromIntegral stride)
-    offsetPtr
+    offset
   glEnableVertexAttribArray
     (fromIntegral layout)
   unbindBuffer buf

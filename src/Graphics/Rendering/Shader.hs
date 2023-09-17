@@ -3,6 +3,7 @@ module Graphics.Rendering.Shader
     ShaderType (..),
     ShaderInfo
   ) where
+import Graphics.Rendering.Uniform (Uniform)
 
 data ShaderType =
     VertexShader
@@ -18,4 +19,5 @@ class Shader t where
 
   deleteShader :: t -> IO ()
 
-  uniformLocation :: t -> String -> IO Int
+  uniform :: t -> String -> IO (Uniform a)
+

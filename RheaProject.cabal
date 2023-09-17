@@ -40,8 +40,10 @@ library
       Graphics.OpenGL.VertexArray
       Graphics.Rendering.Renderer
       Graphics.Rendering.Shader
+      Graphics.Rendering.Uniform
       Graphics.Rendering.Vertex
       Graphics.Window
+      Math.Vector
       Rhea
   other-modules:
       Paths_RheaProject

@@ -12,6 +12,7 @@ import Foreign
 import Foreign.C.String
 import Control.Monad
 import Core.Common
+import Graphics.Rendering.Uniform
 
 newtype GLShader =
   GLShader { handler :: GLuint }
@@ -36,14 +37,16 @@ instance Shader GLShader where
   deleteShader s =
      glDeleteProgram $ handler s
 
-  uniformLocation :: GLShader -> String -> IO Int
-  uniformLocation shader name = do 
+  uniform :: GLShader -> String -> IO (Uniform a)
+  uniform shader name = do
     withCString name $ 
       \n -> do 
-        location <- glGetUniformLocation 
-          $= handler shader 
-          $ castPtr n
-        return $ fromIntegral location
+        location <- 
+          glGetUniformLocation 
+            $= handler shader 
+            $ castPtr n
+        return $ Uniform $ fromIntegral location
+
 
 makeProgram :: [GLShaderPart] -> IO GLShader
 makeProgram parts = do

@@ -18,7 +18,8 @@ import Core.Closeable
 import GHC.TypeLits
 import GHC.Float
 import Foreign
-import GHC.Stable (StablePtr(StablePtr))
+import Graphics.Rendering.Uniform
+import Math.Vector
 
 data Context = Context
   { window :: Window,
@@ -28,7 +29,7 @@ data Context = Context
     vbo :: Buffer ,
     ebo :: Buffer }
 
-type VEBObject = 
+type VEBObject =
   (VertexArray, Buffer, Buffer)
 
 verticies :: [Float]
@@ -40,7 +41,7 @@ verticies =
   ]
 
 indices :: [Nat]
-indices = 
+indices =
   [ 0, 1, 3,   -- first triangle
     1, 2, 3    -- second triangle
   ]
@@ -49,9 +50,9 @@ defaultShader :: IO GLShader
 defaultShader = do
   resVert <- readResource "/Shaders/Default.vert"
   resFrag <- readResource "/Shaders/Default.frag"
-  makeShader 
+  makeShader
     [ (VertexShader, resVert),
-      (FragmentShader, resFrag) 
+      (FragmentShader, resFrag)
     ]
 
 genVertecies :: IO VEBObject
@@ -60,44 +61,39 @@ genVertecies = do
   vao_ <- makeVertexArray
   vbo_ <- makeVertexBuffer verticies
   ebo_ <- makeElementBuffer indices
-
-  linkBuffer vbo_ 0 3 (fromIntegral $ sizeOf (0.0 :: GLfloat) * 3) 0
+  
+  linkBuffer vbo_ 0 3 (fromIntegral $ sizeOf (0.0 :: GLfloat) * 3) nullPtr
 
   return (vao_, vbo_, ebo_)
 
 mainHandler :: Context -> IO Context
 mainHandler context = do
   
+  Just time <- A.getTime
+
   clear $ renderer context
   clearColor $= renderer context $ Charcoal
 
   useShader $ shader context
 
-  Just time <- A.getTime
-  let greenValue = 0.5 + (sin time / 2)  
-  location <- uniformLocation $= shader context $ "uColor"
-  glUniform4f 
-    (fromIntegral location) 
-    0.0 
-    (double2Float greenValue) 
-    0.0 
-    1.0
+  uni <- uniform $= shader context $ "uColor"
+  updateUniform uni (Vector3 0.0 (double2Float $ 0.5 + (sin time / 2)) 0.0)
 
   bindVao $ vao context
-  glDrawElements 
-    GL_TRIANGLES 
-    (fromIntegral $ length indices) 
-    GL_UNSIGNED_INT 
+  glDrawElements
+    GL_TRIANGLES
+    (fromIntegral $ length indices)
+    GL_UNSIGNED_INT
     nullPtr
   unbindVao
 
-  viewport $= renderer context $ window context
-
   swap $ window context
+
+  viewport $= renderer context $ window context
 
   newWindow <- updateWindow $ window context
 
-  return $ Context 
+  return $ Context
     newWindow
     (renderer context)
     (shader context)
