@@ -38,11 +38,11 @@ library
       Rhea.Graphics.OpenGL.Buffer
       Rhea.Graphics.OpenGL.Renderer
       Rhea.Graphics.OpenGL.Shader
+      Rhea.Graphics.OpenGL.Uniform
       Rhea.Graphics.OpenGL.VertexArray
       Rhea.Graphics.Rendering.Renderer
       Rhea.Graphics.Rendering.Shader
       Rhea.Graphics.Rendering.ShaderType
-      Rhea.Graphics.Rendering.Uniform
       Rhea.Graphics.Rendering.Vertex
       Rhea.Graphics.Window
       Rhea.Math.Vector

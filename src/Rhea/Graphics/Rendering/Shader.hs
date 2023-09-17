@@ -8,8 +8,8 @@ module Rhea.Graphics.Rendering.Shader
     close
   ) where
 
-import Rhea.Graphics.Rendering.Uniform (Uniform)
 import qualified Rhea.Graphics.OpenGL.Shader as GL
+import qualified Rhea.Graphics.OpenGL.Uniform as U
 import Rhea.Graphics.Rendering.ShaderType
 import Rhea.Core.Closeable
 
@@ -20,7 +20,12 @@ useShader :: Shader -> IO ()
 useShader = GL.useShader
 
 uniform :: Shader -> String -> IO (Uniform a)
-uniform = GL.uniform
+uniform s = useShader s
+  U.uniform'WithNoUseShader
+ 
+updateUniform :: Shader -> Uniform a -> a -> IO ()
+updateUniform s = useShader s
+  U.updateUniform'WithNoUseShader 
 
 instance Closeable Shader where
 

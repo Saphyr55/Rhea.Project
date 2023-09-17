@@ -74,7 +74,7 @@ mainHandler context = do
   useShader $ shader context
 
   uni <- uniform $= shader context $ "uColor"
-  updateUniform uni (Vector3 0.0 (double2Float $ 0.5 + (sin time / 2)) 0.0)
+  updateUniform $= shader context $ uni (Vector3 0.0 (double2Float $ 0.5 + (sin time / 2)) 0.0)
 
   bindVao $ vao context
   glDrawElements

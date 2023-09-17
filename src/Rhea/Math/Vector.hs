@@ -7,16 +7,12 @@ module Rhea.Math.Vector
     Vector (..)
   ) where
 
-data Vector4 a = Vector4 a a a a
-
+data Vector4 a = Vector4 !a !a !a !a
 type Vector4f = Vector4 Float
-
 type Vector4i = Vector4 Int
 
-data Vector3 a = Vector3 a a a
-
+data Vector3 a = Vector3 !a !a !a
 type Vector3f = Vector3 Float
-
 type Vector3i = Vector3 Int
 
 class Vector t where

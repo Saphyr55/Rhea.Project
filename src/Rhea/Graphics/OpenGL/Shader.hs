@@ -3,15 +3,12 @@ module Rhea.Graphics.OpenGL.Shader
     createShader,
     useShader,
     close,
-    uniform
   ) where
 
 import Graphics.GL
 import Foreign
 import Foreign.C.String
 import Control.Monad
-import Rhea.Core.Common
-import Rhea.Graphics.Rendering.Uniform
 import Rhea.Graphics.Rendering.ShaderType
 
 data ShaderPart = ShaderPart Int ShaderType
@@ -28,18 +25,8 @@ useShader :: Shader -> IO ()
 useShader (GLShader s) =
   glUseProgram $ fromIntegral s
 
-uniform :: Shader -> String -> IO (Uniform a)
-uniform (GLShader s) name = do
-  withCString name $ 
-    \n -> do 
-      location <- 
-        glGetUniformLocation 
-          $= fromIntegral s
-          $ castPtr n
-      return $ Uniform $ fromIntegral location
-
 close :: Shader -> IO ()
-close (GLShader s) = 
+close (GLShader s) =
   glDeleteProgram $ fromIntegral s
 
 makeProgram :: [ShaderPart] -> IO Shader
@@ -107,3 +94,6 @@ logErrorShader shader = do
   glGetShaderInfoLog shader 512 nullPtr infoLogPtr
   infoLog <- peekCString infoLogPtr
   putStrLn infoLog
+
+handler :: Shader -> GLuint
+handler (GLShader s) = fromIntegral s
