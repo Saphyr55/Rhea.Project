@@ -1,17 +1,30 @@
 {-# LANGUAGE InstanceSigs #-}
 
-module Graphics.OpenGL.Buffer where
+module Rhea.Graphics.OpenGL.Buffer
+  ( Buffer(..),
+    makeVertexBuffer,
+    makeElementBuffer,
+    bindBuffer,
+    unbindBuffer,
+    linkBuffer,
+    close,
+  ) where
 
 import Graphics.GL
 import Foreign
-import Core.Closeable
+import Rhea.Core.Closeable
 import GHC.TypeLits
-import Data.Monoid
 import Data.Void (Void)
 
 data Buffer = 
     VertexBuffer (Ptr GLuint)
   | ElementBuffer (Ptr GLuint)
+
+instance Closeable Buffer where
+
+  close :: Buffer -> IO ()
+  close (ElementBuffer ebo) = glDeleteBuffers 1 ebo
+  close (VertexBuffer vbo)  = glDeleteBuffers 1 vbo
 
 makeVertexBuffer :: [Float] -> IO Buffer
 makeVertexBuffer verticies = do
@@ -66,9 +79,3 @@ linkBuffer buf layout numComp stride offset = do
   glEnableVertexAttribArray
     (fromIntegral layout)
   unbindBuffer buf
-
-instance Closeable Buffer where
-  
-  close :: Buffer -> IO ()
-  close (ElementBuffer ebo) = glDeleteBuffers 1 ebo
-  close (VertexBuffer vbo)  = glDeleteBuffers 1 vbo

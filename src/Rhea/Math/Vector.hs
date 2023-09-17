@@ -1,6 +1,6 @@
 {-# LANGUAGE InstanceSigs #-}
 
-module Math.Vector 
+module Rhea.Math.Vector 
   (
     Vector3 (..), Vector3f, Vector3i,
     Vector4 (..), Vector4f, Vector4i,

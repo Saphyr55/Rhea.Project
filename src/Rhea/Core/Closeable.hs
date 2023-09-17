@@ -1,4 +1,4 @@
-module Core.Closeable 
+module Rhea.Core.Closeable 
   ( Closeable(..)
   ) where
 

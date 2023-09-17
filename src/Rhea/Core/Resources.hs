@@ -1,4 +1,4 @@
-module Core.Resources where
+module Rhea.Core.Resources where
 import Paths_RheaProject
 
 readResource :: String -> IO String

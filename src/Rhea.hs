@@ -2,29 +2,26 @@ module Rhea
     ( run
     ) where
 
-import qualified Core.Application as A
-import Graphics.Window
-import Graphics.Rendering.Renderer
-import Graphics.OpenGL.Renderer
-import Graphics.Color
-import Core.Common
+import qualified Rhea.Core.Application as A
+import Rhea.Graphics.Window
+import Rhea.Graphics.Rendering.Renderer
+import Rhea.Graphics.Color
+import Rhea.Core.Common
+import Rhea.Core.Resources
+import Rhea.Graphics.OpenGL.Buffer
+import Rhea.Graphics.OpenGL.VertexArray
+import Rhea.Graphics.Rendering.Shader
+import Rhea.Graphics.Rendering.ShaderType
+import Rhea.Graphics.Rendering.Uniform
+import Rhea.Math.Vector
 import Graphics.GL
-import Graphics.OpenGL.VertexArray
-import Core.Resources
-import Graphics.Rendering.Shader
-import Graphics.OpenGL.Shader
-import Graphics.OpenGL.Buffer
-import Core.Closeable
 import GHC.TypeLits
 import GHC.Float
 import Foreign
-import Graphics.Rendering.Uniform
-import Math.Vector
 
-data Context = Context
+data Env = Env
   { window :: Window,
-    renderer :: GLRenderer,
-    shader :: GLShader,
+    shader :: Shader,
     vao :: VertexArray,
     vbo :: Buffer ,
     ebo :: Buffer }
@@ -46,11 +43,11 @@ indices =
     1, 2, 3    -- second triangle
   ]
 
-defaultShader :: IO GLShader
+defaultShader :: IO Shader
 defaultShader = do
   resVert <- readResource "/Shaders/Default.vert"
   resFrag <- readResource "/Shaders/Default.frag"
-  makeShader
+  createShader
     [ (VertexShader, resVert),
       (FragmentShader, resFrag)
     ]
@@ -66,13 +63,13 @@ genVertecies = do
 
   return (vao_, vbo_, ebo_)
 
-mainHandler :: Context -> IO Context
+mainHandler :: Env -> IO Env
 mainHandler context = do
   
   Just time <- A.getTime
 
-  clear $ renderer context
-  clearColor $= renderer context $ Charcoal
+  clear
+  clearColor Charcoal
 
   useShader $ shader context
 
@@ -89,46 +86,45 @@ mainHandler context = do
 
   swap $ window context
 
-  viewport $= renderer context $ window context
+  viewport $ window context
 
   newWindow <- updateWindow $ window context
 
-  return $ Context
+  return $ Env
     newWindow
-    (renderer context)
     (shader context)
     (vao context)
     (vbo context)
     (ebo context)
 
-mainContext :: IO (Maybe Context)
-mainContext = do
+mainEnv :: IO (Maybe Env)
+mainEnv = do
   m <- makeWindow $ VideoMode 1080 720 "Demo"
   contextualizeWindow m
 
-onFinish :: Context -> IO ()
+onFinish :: Env -> IO ()
 onFinish context = do
-  deleteShader $ shader context
+  close $ shader context
   close $ vbo context
   close $ ebo context
   deleteVao $ vao context
   destroy $ window context
 
-contextualizeWindow :: Maybe Window -> IO (Maybe Context)
+contextualizeWindow :: Maybe Window -> IO (Maybe Env)
 contextualizeWindow Nothing = return Nothing
 contextualizeWindow (Just w) = do
   (vao_, vbo_, ebo_) <- genVertecies
   s <- defaultShader
-  return $ Just $ Context w GLRenderer s vao_ vbo_ ebo_
+  return $ Just $ Env w s vao_ vbo_ ebo_
 
-contextual :: Maybe Context -> IO ()
-contextual Nothing = return ()
-contextual (Just ctx) = do
+contextualEnv :: Maybe Env -> IO ()
+contextualEnv Nothing = return ()
+contextualEnv (Just ctx) = do
   closeCallback $ window ctx
   A.run ctx mainHandler onFinish
 
 run :: IO ()
 run = do
   A.initApp
-  maybeEnv <- mainContext
-  contextual maybeEnv
+  maybeEnv <- mainEnv
+  contextualEnv maybeEnv

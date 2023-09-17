@@ -1,4 +1,4 @@
-module Graphics.Window
+module Rhea.Graphics.Window
   (
     Window(..),
     VideoMode(..),

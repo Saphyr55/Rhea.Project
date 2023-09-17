@@ -1,12 +1,12 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE InstanceSigs #-}
 
-module Graphics.Rendering.Uniform 
+module Rhea.Graphics.Rendering.Uniform 
   ( Uniform (..),
     UniformSystem (..)
   ) where
   
-import Math.Vector
+import Rhea.Math.Vector
 import Graphics.GL
 import GHC.TypeLits
 

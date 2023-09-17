@@ -1,4 +1,4 @@
-module Graphics.Color ( Color(..), rgba, red, green, blue, alpha ) where
+module Rhea.Graphics.Color (Color (..), rgba, red, green, blue, alpha) where
 
 type RGBA = (Float, Float, Float, Float)
 

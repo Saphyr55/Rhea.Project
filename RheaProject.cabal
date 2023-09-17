@@ -28,23 +28,24 @@ source-repository head
 
 library
   exposed-modules:
-      Core.Application
-      Core.Closeable
-      Core.Common
-      Core.Context
-      Core.Resources
-      Graphics.Color
-      Graphics.OpenGL.Buffer
-      Graphics.OpenGL.Renderer
-      Graphics.OpenGL.Shader
-      Graphics.OpenGL.VertexArray
-      Graphics.Rendering.Renderer
-      Graphics.Rendering.Shader
-      Graphics.Rendering.Uniform
-      Graphics.Rendering.Vertex
-      Graphics.Window
-      Math.Vector
       Rhea
+      Rhea.Core.Application
+      Rhea.Core.Closeable
+      Rhea.Core.Common
+      Rhea.Core.Context
+      Rhea.Core.Resources
+      Rhea.Graphics.Color
+      Rhea.Graphics.OpenGL.Buffer
+      Rhea.Graphics.OpenGL.Renderer
+      Rhea.Graphics.OpenGL.Shader
+      Rhea.Graphics.OpenGL.VertexArray
+      Rhea.Graphics.Rendering.Renderer
+      Rhea.Graphics.Rendering.Shader
+      Rhea.Graphics.Rendering.ShaderType
+      Rhea.Graphics.Rendering.Uniform
+      Rhea.Graphics.Rendering.Vertex
+      Rhea.Graphics.Window
+      Rhea.Math.Vector
   other-modules:
       Paths_RheaProject
   hs-source-dirs:

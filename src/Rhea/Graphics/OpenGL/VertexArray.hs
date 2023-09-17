@@ -1,4 +1,4 @@
-module Graphics.OpenGL.VertexArray 
+module Rhea.Graphics.OpenGL.VertexArray 
   (
     VertexArray,
     makeVertexArray, 

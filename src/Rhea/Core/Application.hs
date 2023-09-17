@@ -1,4 +1,4 @@
-module Core.Application (initApp, run, getTime) where
+module Rhea.Core.Application (initApp, run, getTime) where
 
 import Control.Monad (forever)
 import qualified Graphics.UI.GLFW as GLFW
@@ -16,7 +16,7 @@ initApp :: IO ()
 initApp = do
   _ <- GLFW.init
   GLFW.defaultWindowHints
-  let _ = map GLFW.windowHint hints
+  mapM_ GLFW.windowHint hints
   GLFW.windowHint $ GLFW.WindowHint'Resizable True
 
 run :: c -> Handler c -> (c -> IO ()) -> IO ()

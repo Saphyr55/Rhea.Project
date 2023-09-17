@@ -1,4 +1,4 @@
-module Core.Common where
+module Rhea.Core.Common where
 
 identity :: a -> a
 identity a = a
