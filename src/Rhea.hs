@@ -12,10 +12,9 @@ import Rhea.Graphics.OpenGL.Buffer
 import Rhea.Graphics.OpenGL.VertexArray
 import Rhea.Graphics.Rendering.Shader
 import Rhea.Graphics.Rendering.ShaderType
+
 import Graphics.GL
-import GHC.TypeLits
 import Foreign
-import GHC.Float
 import Linear
 
 data Env = Env
@@ -36,7 +35,7 @@ verticies =
     -0.5,  0.5, 0.0   -- top left 
   ]
 
-indices :: [Nat]
+indices :: [Word64]
 indices =
   [ 0, 1, 3,   -- first triangle
     1, 2, 3    -- second triangle
@@ -73,7 +72,7 @@ mainHandler context = do
     updateUniform
         $= shader context
         $ Uniform3f "uColor" 
-        $ V3 0.0 (double2Float $ 0.5 + (sin time / 2)) 0.0
+        $ V3 0.0 (0.5 + (sin (realToFrac time) / 2)) 0.0
 
     bindVao $ vao context
     glDrawElements

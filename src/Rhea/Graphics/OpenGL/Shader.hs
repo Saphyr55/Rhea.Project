@@ -5,11 +5,11 @@ module Rhea.Graphics.OpenGL.Shader
     close,
   ) where
 
+import Rhea.Graphics.Rendering.ShaderType
 import Graphics.GL
 import Foreign
 import Foreign.C.String
 import Control.Monad
-import Rhea.Graphics.Rendering.ShaderType
 
 data ShaderPart = ShaderPart Int ShaderType
 

@@ -4,11 +4,11 @@ module Rhea.Graphics.OpenGL.Renderer
     clearColor,
     clear
   ) where
-
-import Graphics.GL
-import Rhea.Graphics.Color ( alpha, blue, green, red, Color )
-import Data.Bits
+    
+import Rhea.Graphics.Color (Color, alpha, blue, green, red)
 import Rhea.Graphics.Window (VideoMode (..), Window (..))
+import Graphics.GL
+import Data.Bits
 
 viewport :: Window -> IO ()
 viewport window =  

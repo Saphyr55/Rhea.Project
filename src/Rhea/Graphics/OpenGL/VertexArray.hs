@@ -6,9 +6,9 @@ module Rhea.Graphics.OpenGL.VertexArray
     unbindVao, 
     deleteVao
   ) where
-
-import Foreign
+    
 import Graphics.GL
+import Foreign
 
 newtype VertexArray = VertexArray (Ptr GLuint)
 

@@ -6,8 +6,8 @@ module Rhea.Graphics.Rendering.ShaderType
     Uniform(..)
   ) where
 
-import GHC.TypeLits
 import Linear
+import Data.Word
 
 data ShaderType
   = VertexShader
@@ -17,7 +17,7 @@ type ShaderInfo = (ShaderType, String)
 
 newtype Shader = GLShader Int
 
-newtype UniformLocation = UniformLocation Nat
+newtype UniformLocation = UniformLocation Word64
 
 data Uniform
   = Uniform3f String (V3 Float)

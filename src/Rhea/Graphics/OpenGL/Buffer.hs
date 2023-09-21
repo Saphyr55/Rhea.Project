@@ -11,9 +11,9 @@ module Rhea.Graphics.OpenGL.Buffer
   ) where
 
 import Graphics.GL
-import Foreign
+import Data.Word ( Word64 )
+import Foreign ( Ptr, castPtr, malloc, newArray, Storable(peek, sizeOf) )
 import Rhea.Core.Closeable
-import GHC.TypeLits
 import Data.Void (Void)
 
 data Buffer = 
@@ -66,7 +66,7 @@ makeBufferPtr enum len listPtr = do
     glBufferData enum len (castPtr listPtr) GL_STATIC_DRAW
     return bufPtr
 
-linkBuffer :: Buffer -> Nat -> Nat -> Nat -> Ptr Void -> IO ()
+linkBuffer :: Buffer -> Word64 -> Word64 -> Word64 -> Ptr Void -> IO ()
 linkBuffer buf layout numComp stride offset = do
     bindBuffer buf
     glVertexAttribPointer
