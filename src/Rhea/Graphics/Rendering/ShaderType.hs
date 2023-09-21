@@ -7,7 +7,7 @@ module Rhea.Graphics.Rendering.ShaderType
   ) where
 
 import GHC.TypeLits
-import Rhea.Math.Vector
+import Linear
 
 data ShaderType
   = VertexShader
@@ -20,5 +20,5 @@ newtype Shader = GLShader Int
 newtype UniformLocation = UniformLocation Nat
 
 data Uniform
-  = Uniform3f String Vector3f
-  | Uniform4f String Vector4f
+  = Uniform3f String (V3 Float)
+  | Uniform4f String (V4 Float)

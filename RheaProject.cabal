@@ -21,6 +21,7 @@ extra-source-files:
 data-files:
     res/Shaders/Default.frag
     res/Shaders/Default.vert
+    res/Textures/wall.jpg
 
 source-repository head
   type: git
@@ -32,20 +33,21 @@ library
       Rhea.Core.Application
       Rhea.Core.Closeable
       Rhea.Core.Common
-      Rhea.Core.Context
       Rhea.Core.Resources
       Rhea.Graphics.Color
+      Rhea.Graphics.Image
       Rhea.Graphics.OpenGL.Buffer
       Rhea.Graphics.OpenGL.Renderer
       Rhea.Graphics.OpenGL.Shader
+      Rhea.Graphics.OpenGL.Texture
       Rhea.Graphics.OpenGL.Uniform
       Rhea.Graphics.OpenGL.VertexArray
       Rhea.Graphics.Rendering.Renderer
       Rhea.Graphics.Rendering.Shader
       Rhea.Graphics.Rendering.ShaderType
+      Rhea.Graphics.Rendering.Texture
       Rhea.Graphics.Rendering.Vertex
       Rhea.Graphics.Window
-      Rhea.Math.Vector
   other-modules:
       Paths_RheaProject
   hs-source-dirs:
@@ -53,10 +55,12 @@ library
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       GLFW-b
+    , JuicyPixels >=3.3.8
     , OpenGLRaw
     , base >=4.7 && <5
     , binary >=0.7.5
     , bytestring >=0.11.5.1
+    , linear >=1.22
   default-language: Haskell2010
 
 executable RheaProject-exe
@@ -68,11 +72,13 @@ executable RheaProject-exe
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       GLFW-b
+    , JuicyPixels >=3.3.8
     , OpenGLRaw
     , RheaProject
     , base >=4.7 && <5
     , binary >=0.7.5
     , bytestring >=0.11.5.1
+    , linear >=1.22
   default-language: Haskell2010
 
 test-suite RheaProject-test
@@ -85,9 +91,11 @@ test-suite RheaProject-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       GLFW-b
+    , JuicyPixels >=3.3.8
     , OpenGLRaw
     , RheaProject
     , base >=4.7 && <5
     , binary >=0.7.5
     , bytestring >=0.11.5.1
+    , linear >=1.22
   default-language: Haskell2010

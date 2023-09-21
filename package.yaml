@@ -21,10 +21,12 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- binary >= 0.7.5
+- JuicyPixels >= 3.3.8
+- bytestring >= 0.11.5.1
 - GLFW-b
 - OpenGLRaw
-- binary >= 0.7.5
-- bytestring >= 0.11.5.1
+- linear >= 1.22
 
 ghc-options:
 - -Wall
@@ -40,6 +42,7 @@ ghc-options:
 data-files: 
 - res/Shaders/Default.frag
 - res/Shaders/Default.vert
+- res/Textures/wall.jpg
 
 library:
   source-dirs: src
