@@ -1,11 +1,11 @@
-{-# OPTIONS_GHC -Wno-orphans #-}
 {-# LANGUAGE InstanceSigs #-}
 
-module Rhea.Graphics.Rendering.Shader 
+module Rhea.Graphics.Rendering.Shader
   ( createShader,
     useShader,
     uniform,
-    close
+    close,
+    updateUniform,
   ) where
 
 import qualified Rhea.Graphics.OpenGL.Shader as GL
@@ -19,13 +19,19 @@ createShader = GL.createShader
 useShader :: Shader -> IO ()
 useShader = GL.useShader
 
-uniform :: Shader -> String -> IO (Uniform a)
-uniform s = useShader s
-  U.uniform'WithNoUseShader
- 
-updateUniform :: Shader -> Uniform a -> a -> IO ()
-updateUniform s = useShader s
-  U.updateUniform'WithNoUseShader 
+uniform :: Shader -> String -> IO UniformLocation
+uniform shader name = do
+  useShader shader
+  U.uniform' shader name
+
+updateUniform :: Shader -> Uniform -> IO ()
+updateUniform shader uni@(Uniform3f name _) = updateUniform' shader name uni
+updateUniform shader uni@(Uniform4f name _) = updateUniform' shader name uni
+
+updateUniform' :: Shader -> String -> Uniform -> IO ()
+updateUniform' shader name uni = do
+  location <- uniform shader name
+  U.updateUniform' location uni
 
 instance Closeable Shader where
 

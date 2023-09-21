@@ -12,12 +12,11 @@ import Rhea.Graphics.OpenGL.Buffer
 import Rhea.Graphics.OpenGL.VertexArray
 import Rhea.Graphics.Rendering.Shader
 import Rhea.Graphics.Rendering.ShaderType
-import Rhea.Graphics.Rendering.Uniform
 import Rhea.Math.Vector
 import Graphics.GL
 import GHC.TypeLits
-import GHC.Float
 import Foreign
+import GHC.Float
 
 data Env = Env
   { window :: Window,
@@ -71,10 +70,10 @@ mainHandler context = do
   clear
   clearColor Charcoal
 
-  useShader $ shader context
-
-  uni <- uniform $= shader context $ "uColor"
-  updateUniform $= shader context $ uni (Vector3 0.0 (double2Float $ 0.5 + (sin time / 2)) 0.0)
+  updateUniform
+    $= shader context
+    $ Uniform3f "uColor" 
+    $ Vector3 0.0 (double2Float $ 0.5 + (sin time / 2)) 0.0
 
   bindVao $ vao context
   glDrawElements
@@ -96,6 +95,7 @@ mainHandler context = do
     (vao context)
     (vbo context)
     (ebo context)
+
 
 mainEnv :: IO (Maybe Env)
 mainEnv = do

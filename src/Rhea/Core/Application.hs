@@ -25,12 +25,12 @@ run context handler onFinish = do
   onFinish context
   GLFW.terminate
 
-getTime :: IO (Maybe Double)
-getTime = GLFW.getTime
-
 auxRun :: c -> Handler c -> IO ()
 auxRun context handler = do
   ctx <- handler context
   forever $ do
     GLFW.pollEvents
     auxRun ctx handler
+
+getTime :: IO (Maybe Double)
+getTime = GLFW.getTime
