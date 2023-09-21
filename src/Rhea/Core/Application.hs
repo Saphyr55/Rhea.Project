@@ -1,4 +1,8 @@
-module Rhea.Core.Application (initApp, run, getTime) where
+module Rhea.Core.Application 
+  ( initApp
+  , run
+  , getTime
+  ) where
 
 import Control.Monad (forever)
 import qualified Graphics.UI.GLFW as GLFW
