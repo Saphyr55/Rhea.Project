@@ -22,3 +22,4 @@ newtype UniformLocation = UniformLocation Word64
 data Uniform
   = Uniform3f String (V3 Float)
   | Uniform4f String (V4 Float)
+  | Uniform1i String Int

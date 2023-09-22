@@ -15,24 +15,27 @@ import Rhea.Graphics.Rendering.ShaderType
 
 import Graphics.GL
 import Foreign
-import Linear
-
-data Env = Env
-  { window :: Window,
-    shader :: Shader,
-    vao :: VertexArray,
-    vbo :: Buffer ,
-    ebo :: Buffer }
+import Rhea.Graphics.OpenGL.Texture (makeTexture, bindTexture, unbindTexture)
+import Rhea.Graphics.Image (image)
 
 type VEBObject =
-    (VertexArray, Buffer, Buffer)
+  (VertexArray, Buffer, Buffer)
+
+data Env = Env
+  { window  :: Window
+  , shader  :: Shader
+  , vao     :: VertexArray
+  , vbo     :: Buffer
+  , ebo     :: Buffer
+  , texture :: Word64
+  }
 
 verticies :: [Float]
 verticies =
-  [  0.5,  0.5, 0.0,  -- top right
-     0.5, -0.5, 0.0,  -- bottom right
-    -0.5, -0.5, 0.0,  -- bottom left
-    -0.5,  0.5, 0.0   -- top left 
+  [  0.5,  0.5, 0.0,    1.0, 1.0,  -- top right
+     0.5, -0.5, 0.0,    1.0, 0.0,  -- bottom right
+    -0.5, -0.5, 0.0,    0.0, 0.0,  -- bottom left
+    -0.5,  0.5, 0.0,    0.0, 1.0  -- top left 
   ]
 
 indices :: [Word64]
@@ -56,23 +59,26 @@ genVertecies = do
     vao_ <- makeVertexArray
     vbo_ <- makeVertexBuffer verticies
     ebo_ <- makeElementBuffer indices
-    
-    linkBuffer vbo_ 0 3 (fromIntegral $ sizeOf (0.0 :: GLfloat) * 3) nullPtr
+
+    offset2 <- new (3 * sizeOf (0.0 :: GLfloat))
+
+    linkBuffer vbo_ 0 3 (fromIntegral $ sizeOf (0.0 :: GLfloat) * 5) nullPtr
+    linkBuffer vbo_ 1 2 (fromIntegral $ sizeOf (0.0 :: GLfloat) * 5) (castPtr offset2)
 
     return (vao_, vbo_, ebo_)
 
 mainHandler :: Env -> IO Env
 mainHandler context = do
-  
-    Just time <- A.getTime
 
     clear
     clearColor Charcoal
 
-    updateUniform
-        $= shader context
-        $ Uniform3f "uColor" 
-        $ V3 0.0 (0.5 + (sin (realToFrac time) / 2)) 0.0
+    useShader $ shader context
+
+    bindTexture $ texture context
+
+    updateUniform $= shader context $ Uniform1i "uTexture" 0
+    glActiveTexture GL_TEXTURE1
 
     bindVao $ vao context
     glDrawElements
@@ -81,7 +87,7 @@ mainHandler context = do
         GL_UNSIGNED_INT
         nullPtr
     unbindVao
-
+    unbindTexture
     swap $ window context
 
     viewport $ window context
@@ -94,7 +100,7 @@ mainHandler context = do
         (vao context)
         (vbo context)
         (ebo context)
-
+        (texture context)
 
 mainEnv :: IO (Maybe Env)
 mainEnv = do
@@ -114,7 +120,9 @@ contextualizeWindow Nothing = return Nothing
 contextualizeWindow (Just w) = do
     (vao_, vbo_, ebo_) <- genVertecies
     s <- defaultShader
-    return $ Just $ Env w s vao_ vbo_ ebo_
+    infoImage <- image "Textures/wall.jpg"
+    tex <- makeTexture infoImage
+    return $ Just $ Env w s vao_ vbo_ ebo_ tex
 
 contextualEnv :: Maybe Env -> IO ()
 contextualEnv Nothing = return ()

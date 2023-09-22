@@ -61,6 +61,7 @@ library
     , binary >=0.7.5
     , bytestring >=0.11.5.1
     , linear >=1.22
+    , vector
   default-language: Haskell2010
 
 executable RheaProject-exe
@@ -79,6 +80,7 @@ executable RheaProject-exe
     , binary >=0.7.5
     , bytestring >=0.11.5.1
     , linear >=1.22
+    , vector
   default-language: Haskell2010
 
 test-suite RheaProject-test
@@ -98,4 +100,5 @@ test-suite RheaProject-test
     , binary >=0.7.5
     , bytestring >=0.11.5.1
     , linear >=1.22
+    , vector
   default-language: Haskell2010
