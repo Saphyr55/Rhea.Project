@@ -14,13 +14,13 @@ data Color =
 
 rgba :: Color -> RGBA
 rgba color = case color of
-    Red -> (1.0, 0.0, 0.0, 1.0)
-    Green -> (0.0, 1.0, 0.0, 1.0)
-    Blue -> (0.0, 0.0, 1.0, 1.0)
-    White -> (1.0, 1.0, 1.0, 1.0)
-    Black -> (0.0, 0.0, 0.0, 1.0)
-    Charcoal -> (0.21, 0.27, 0.30, 1.0)
-    Color rgba_ -> rgba_
+  Red -> (1.0, 0.0, 0.0, 1.0)
+  Green -> (0.0, 1.0, 0.0, 1.0)
+  Blue -> (0.0, 0.0, 1.0, 1.0)
+  White -> (1.0, 1.0, 1.0, 1.0)
+  Black -> (0.0, 0.0, 0.0, 1.0)
+  Charcoal -> (0.21, 0.27, 0.30, 1.0)
+  Color rgba_ -> rgba_
 
 red :: Color -> Float
 red color = case rgba color of (r, _, _, _) -> r

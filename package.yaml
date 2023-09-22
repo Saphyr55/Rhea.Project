@@ -43,7 +43,7 @@ ghc-options:
 data-files: 
 - res/Shaders/Default.frag
 - res/Shaders/Default.vert
-- res/Textures/wall.jpg
+- res/Textures/Wall.jpg
 
 library:
   source-dirs: src

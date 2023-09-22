@@ -6,8 +6,8 @@ import Paths_RheaProject
 
 readResource :: String -> IO String
 readResource path = do
-    file <- resourceFilepath path
-    readFile file
+  file <- resourceFilepath path
+  readFile file
 
 resourceFilepath :: String -> IO FilePath
 resourceFilepath path = getDataFileName ("res/" ++ path)

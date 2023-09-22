@@ -13,14 +13,15 @@ import qualified Graphics.UI.GLFW as GLFW
 import System.Exit ( exitSuccess )
 
 data VideoMode = VideoMode
-    { width  :: Int,
-      height :: Int,
-      title  :: String }
-    deriving ( Show )
+  { width  :: Int
+  , height :: Int
+  , title  :: String 
+  } deriving ( Show )
 
 data Window = Window
-    { handler   :: GLFW.Window,
-      videoMode :: VideoMode }
+  { handler   :: GLFW.Window
+  , videoMode :: VideoMode 
+  }
 
 makeWindow :: VideoMode -> IO (Maybe Window)
 makeWindow mode = do
@@ -32,7 +33,7 @@ makeWindow mode = do
 
 destroy :: Window -> IO ()
 destroy win = do
-    GLFW.destroyWindow (handler win)
+  GLFW.destroyWindow (handler win)
 
 swap :: Window -> IO ()
 swap window =
