@@ -23,3 +23,4 @@ data Uniform
   = Uniform3f String (V3 Float)
   | Uniform4f String (V4 Float)
   | Uniform1i String Int
+  | UniformMatrix4f String (M44 Float)

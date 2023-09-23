@@ -12,11 +12,14 @@ import Rhea.Core.Common
 import Rhea.Core.Resources
 import Rhea.Graphics.OpenGL.Buffer
 import Rhea.Graphics.OpenGL.VertexArray
-import Rhea.Graphics.OpenGL.Texture
+import Rhea.Graphics.Rendering.Texture
 import Rhea.Graphics.Rendering.Shader
 import Rhea.Graphics.Rendering.ShaderType
 import Graphics.GL
 import Foreign
+import qualified Linear as L 
+import GHC.Event.Windows.Clock (getTime)
+import Linear (identity)
 
 type VEBObject =
   (VertexArray, Buffer, Buffer)
@@ -27,15 +30,15 @@ data Env = Env
   , vao     :: VertexArray
   , vbo     :: Buffer
   , ebo     :: Buffer
-  , texture :: Word32
+  , texture :: Texture
   }
 
 verticies :: [Float]
 verticies =
-  [  0.5,  0.5, 0.0,  0.0, 0.0, 0.0, 0.0,  1.0, 1.0,  -- top right
-     0.5, -0.5, 0.0,  0.0, 0.0, 0.0, 0.0,  1.0, 0.0,  -- bottom right
-    -0.5, -0.5, 0.0,  0.0, 0.0, 0.0, 0.0,  0.0, 0.0,  -- bottom left
-    -0.5,  0.5, 0.0,  0.0, 0.0, 0.0, 0.0,  0.0, 1.0   -- top left
+  [  0.5,  0.5, 0.0,  1.0, 0.0, 0.0,  1.0, 1.0,  -- top right
+     0.5, -0.5, 0.0,  0.0, 1.0, 0.0,  1.0, 0.0,  -- bottom right
+    -0.5, -0.5, 0.0,  0.0, 0.0, 1.0,  0.0, 0.0,  -- bottom left
+    -0.5,  0.5, 0.0,  1.0, 1.0, 0.0,  0.0, 1.0   -- top left
   ]
 
 indices :: [Word64]
@@ -60,23 +63,39 @@ genVertecies = do
   vbo_ <- makeVertexBuffer verticies
   ebo_ <- makeElementBuffer indices
 
-  linkBuffer vbo_ 0 3 (fromIntegral $ sizeOf (0 :: Float) * 9) 
-  linkBuffer vbo_ 1 4 (fromIntegral $ sizeOf (0 :: Float) * 9)
-  linkBuffer vbo_ 2 2 (fromIntegral $ sizeOf (0 :: Float) * 9)
+  linkBuffer vbo_ 0 3 
+    (fromIntegral $ sizeOf (0 :: Float) * 8)
+    (fromIntegral $ 0 * sizeOf (0 :: Float))
+
+  linkBuffer vbo_ 1 3 
+    (fromIntegral $ sizeOf (0 :: Float) * 8) 
+    (fromIntegral $ 3 * sizeOf (0 :: Float))
+
+  linkBuffer vbo_ 2 2 
+    (fromIntegral $ sizeOf (0 :: Float) * 8) 
+    (fromIntegral $ 6 * sizeOf (0 :: Float))
 
   return (vao_, vbo_, ebo_)
 
 mainHandler :: Env -> IO Env
 mainHandler context = do
 
+  let s = shader context
+  timeValue <- maybe 0 realToFrac <$> A.getTime
+
   clear
   clearColor Charcoal
   handleError
 
-  useShader $ shader context
+  useShader s
 
-  updateUniform $= shader context $ Uniform1i "uTexture" 0
+  let rotQ   = L.axisAngle ( L.V3 0 0 1 ) timeValue
+  let rotM33 = L.fromQuaternion rotQ
+  let model  = L.mkTransformationMat rotM33 (L.V3 0 0 0)
 
+  updateUniform s $ UniformMatrix4f "model" model
+  updateUniform s $ Uniform1i "uTexture" 0
+  
   bindTexture $ texture context
 
   bindVao $ vao context
@@ -124,7 +143,7 @@ contextualizeWindow (Just w) = do
   (vao_, vbo_, ebo_) <- genVertecies
   s <- defaultShader
   i <- image "Textures/Wall.jpg"
-  tex <- makeTexture i
+  tex <- createTexture i 0
   return $ Just $ Env w s vao_ vbo_ ebo_ tex
 
 contextualEnv :: Maybe Env -> IO ()

@@ -11,11 +11,10 @@ module Rhea.Graphics.OpenGL.Buffer
   ) where
 
 import Graphics.GL
-import Data.Word ( Word64 )
-import Foreign ( Ptr, castPtr, malloc, newArray, Storable(peek, sizeOf), nullPtr )
+import Foreign
 import Rhea.Core.Closeable
 
-data Buffer = 
+data Buffer =
     VertexBuffer (Ptr GLuint)
   | ElementBuffer (Ptr GLuint)
 
@@ -27,8 +26,8 @@ instance Closeable Buffer where
 
 makeVertexBuffer :: [Float] -> IO Buffer
 makeVertexBuffer verticies = do
-  let vSize = fromIntegral $ sizeOf (0 :: GLfloat) * length verticies 
-  vPtr <- newArray verticies 
+  let vSize = fromIntegral $ sizeOf (0 :: GLfloat) * length verticies
+  vPtr <- newArray verticies
   ptr <- makeBufferPtr GL_ARRAY_BUFFER vSize vPtr
   return $ VertexBuffer ptr
 
@@ -65,16 +64,15 @@ makeBufferPtr enum len listPtr = do
   glBufferData enum len (castPtr listPtr) GL_STATIC_DRAW
   return bufPtr
 
-linkBuffer :: Buffer -> Word64 -> Word64 -> Word64 -> IO ()
-linkBuffer buf layout numComp stride = do
+linkBuffer :: Buffer -> Word32 -> Word32 -> Word32 -> Word32 -> IO ()
+linkBuffer buf layout numComp stride offset = do
   bindBuffer buf
   glVertexAttribPointer
-    (fromIntegral layout)
+    layout
     (fromIntegral numComp)
     GL_FLOAT
     GL_FALSE
     (fromIntegral stride)
-    nullPtr
-  glEnableVertexAttribArray 
-    $ fromIntegral layout
+    (intPtrToPtr $ fromIntegral offset)
+  glEnableVertexAttribArray layout
   unbindBuffer buf

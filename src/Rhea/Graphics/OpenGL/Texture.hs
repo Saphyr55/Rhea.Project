@@ -43,14 +43,14 @@ genTexture = do
   glBindTexture GL_TEXTURE_2D texture
   return texture
 
-bindTexture :: Word32 -> IO ()
-bindTexture t = do
-  glActiveTexture (GL_TEXTURE0 + 0)
+bindTexture :: Word32 -> Word32 -> IO ()
+bindTexture t slot = do
+  glActiveTexture (GL_TEXTURE0 + slot)
   glBindTexture GL_TEXTURE_2D t
 
 unbindTexture :: IO ()
 unbindTexture = 
-  bindTexture 0
+  glBindTexture GL_TEXTURE_2D 0
 
 defaultTexParameteri :: IO ()
 defaultTexParameteri = do

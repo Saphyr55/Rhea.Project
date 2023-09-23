@@ -1,7 +1,4 @@
-module Rhea.Core.Common (identity, ($=)) where
-
-identity :: a -> a
-identity a = a
+module Rhea.Core.Common (($=)) where
 
 ($=) :: (a -> b) -> a -> b
 ($=) f = f
