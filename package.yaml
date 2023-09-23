@@ -28,6 +28,7 @@ dependencies:
 - OpenGLRaw
 - vector
 - linear >= 1.22
+- containers
 
 ghc-options:
 - -Wall

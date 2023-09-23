@@ -25,16 +25,16 @@ initApp = do
 
 run :: c -> Handler c -> (c -> IO ()) -> IO ()
 run context handler onFinish = do
-  auxRun context handler
+  run'Loop context handler
   onFinish context
   GLFW.terminate
 
-auxRun :: c -> Handler c -> IO ()
-auxRun context handler = do
+run'Loop :: c -> Handler c -> IO ()
+run'Loop context handler = do
   ctx <- handler context
   forever $ do
     GLFW.pollEvents
-    auxRun ctx handler
+    run'Loop ctx handler
 
 getTime :: IO (Maybe Double)
 getTime = GLFW.getTime

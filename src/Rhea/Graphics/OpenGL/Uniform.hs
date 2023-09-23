@@ -22,6 +22,6 @@ updateUniform' (UniformLocation u) (Uniform3f _ (V3 x y z))   = glUniform3f (fro
 updateUniform' (UniformLocation u) (Uniform1i _ i)            = glUniform1i $= fromIntegral u $ fromIntegral i
 updateUniform' (UniformLocation u) (UniformMatrix4f _ m) = do
   mPtr <- malloc
-  poke mPtr m
+  poke mPtr (transpose m)
   glUniformMatrix4fv (fromIntegral u) 1 GL_FALSE $ castPtr mPtr
 

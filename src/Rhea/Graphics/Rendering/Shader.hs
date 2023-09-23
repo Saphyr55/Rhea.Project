@@ -25,6 +25,9 @@ uniform shader name = do
   useShader shader
   U.uniform' shader name
 
+updateUniform'Location :: UniformLocation -> Uniform -> IO ()
+updateUniform'Location = U.updateUniform'
+
 updateUniform :: Shader -> Uniform -> IO ()
 updateUniform shader uni@(Uniform3f name _) = updateUniform' shader name uni
 updateUniform shader uni@(Uniform4f name _) = updateUniform' shader name uni
@@ -34,7 +37,7 @@ updateUniform shader uni@(UniformMatrix4f name _) = updateUniform' shader name u
 updateUniform' :: Shader -> String -> Uniform -> IO ()
 updateUniform' shader name uni = do
   location <- uniform shader name
-  U.updateUniform' location uni
+  updateUniform'Location location uni
 
 instance Closeable Shader where
 

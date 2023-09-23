@@ -1,8 +1,8 @@
 module Rhea.Graphics.OpenGL.Renderer 
-  (
-    viewport,
-    clearColor,
-    clear
+  ( enable
+  , viewport
+  , clearColor
+  , clear
   ) where
     
 import Rhea.Graphics.Color (Color, alpha, blue, green, red)
@@ -15,6 +15,10 @@ viewport window =
     glViewport 0 0
         (fromIntegral $ width $ videoMode window)
         (fromIntegral $ height $ videoMode window)
+
+enable :: IO ()
+enable = 
+  glEnable GL_DEPTH_TEST
 
 clearColor ::  Color -> IO ()
 clearColor c =
