@@ -3,42 +3,37 @@ module Rhea
     ) where
 
 import qualified Rhea.Core.Application as A
-
+import Rhea.Core.Common
 import Rhea.Graphics.Image
 import Rhea.Graphics.Window
 import Rhea.Graphics.Rendering.Renderer
 import Rhea.Graphics.Color
-import Rhea.Core.Common
-import Rhea.Core.Resources
 import Rhea.Graphics.OpenGL.Buffer
 import Rhea.Graphics.OpenGL.VertexArray
 import Rhea.Graphics.Rendering.Texture
 import Rhea.Graphics.Rendering.Shader
 import Rhea.Graphics.Rendering.ShaderType
+import Rhea.Graphics.Camera
 import Graphics.GL
-import Foreign
 import qualified Linear as L
 import Linear ( V3(..) )
-import Rhea.Graphics.Camera
-import Data.IORef
-import qualified Rhea.Input.Input as I
-import Rhea.Input.Mouse (MouseInfo(frontVec))
 import qualified Graphics.UI.GLFW as GLFW
 import Control.Monad
+import Data.Word
+import Rhea.Input.Input
 
 type VEBObject =
   (VertexArray, Buffer, Buffer)
 
 data Env = Env
-  { cWindow   :: Window
-  , cShader   :: Shader
-  , vao       :: VertexArray
-  , vbo       :: Buffer
-  , ebo       :: Buffer
-  , texture   :: Texture
-  , envCamera :: Camera
-  , deltaTime :: Float
-  , lastTime  :: Float
+  { window     :: Window
+  , shader     :: Shader
+  , vao        :: VertexArray
+  , vbo        :: Buffer
+  , ebo        :: Buffer
+  , texture    :: Texture
+  , camera     :: Camera
+  , time       :: A.Time
   }
 
 verticies :: [Float]
@@ -55,19 +50,20 @@ indices =
     1, 2, 3    -- second triangle
   ]
 
-defaultShader :: IO Shader
-defaultShader = do
-  resVert <- readResource "/Shaders/Default.vert"
-  resFrag <- readResource "/Shaders/Default.frag"
-  createShader
-    [ (VertexShader, resVert),
-      (FragmentShader, resFrag)
-    ]
+contextualEnv :: Maybe Env -> IO ()
+contextualEnv Nothing = return ()
+contextualEnv (Just env) = do
+  closeCallback $ window env
+  A.run
+    env ( updateTime'Start
+      >=> render'Env
+      >=> updateWindow'Env
+      >=> updateCamera'Env
+      >=> updateTime'End
+      ) onFinish
 
 genVertecies :: IO VEBObject
 genVertecies = do
-
-  let floatSize = ( fromIntegral $ sizeOf (0 :: Float) ) :: Word32
 
   vao_ <- makeVertexArray
   vbo_ <- makeVertexBuffer cubes
@@ -78,24 +74,18 @@ genVertecies = do
 
   return (vao_, vbo_, undefined)
 
-mainHandler :: Env -> IO Env
-mainHandler env = do
-
-  valueTime <- maybe 0 realToFrac <$> A.getTime
+render'Env :: Env -> IO Env
+render'Env env@(Env window shader vao vbo ebo texture camera time) = do
 
   clear
   clearColor Charcoal
-  handleError
-
-  let shader = cShader env
-  let window = cWindow env
 
   let uu'Partial = updateUniform shader
 
-  let (VideoMode windowWidth windowHeight _) = videoMode $ cWindow env
+  let (VideoMode windowWidth windowHeight _) = videoMode window
 
   let model       = L.mkTransformation (L.axisAngle (V3 0.5 1 0) 1) (V3 0 0 0)
-  let view        = cameraView $ envCamera env
+  let view        = cameraView camera
   let projection  = L.perspective 45.0 ( realToFrac windowWidth / realToFrac windowHeight ) 0.1 100.0
 
   useShader shader
@@ -103,11 +93,11 @@ mainHandler env = do
   uu'Partial $ UniformMatrix4f "projection" projection
   uu'Partial $ UniformMatrix4f "view"       view
   uu'Partial $ UniformMatrix4f "model"      model
-  uu'Partial $ Uniform1i       "uTexture"   0
+  uu'Partial $ Uniform1i "uTexture" (fromIntegral $ textureSlot texture)
 
-  bindTexture $ texture env
+  bindTexture texture
 
-  bindVao $ vao env
+  bindVao vao
 
   glDrawArrays GL_TRIANGLES 0 36
 
@@ -119,53 +109,58 @@ mainHandler env = do
 
   viewport window
 
-  newCamera <- updateCamera'IO env
-  newWindow <- updateWindow window
+  return env
 
-  return $ Env
-    newWindow
-    (cShader env)
-    (vao env)
-    (vbo env)
-    (ebo env)
-    (texture env)
-    newCamera
-    (valueTime - lastTime env)
-    valueTime
+updateTime'Start :: Env -> IO Env
+updateTime'Start env = do
+  t <- A.updateTime'Start $ time env
+  return env {time = t}
 
+updateTime'End :: Env -> IO Env
+updateTime'End env = do
+  t <- A.updateTime'End $ time env
+  return env {time = t}
 
-updateCamera'IO :: Env -> IO Camera
-updateCamera'IO env = do
+updateWindow'Env :: Env -> IO Env
+updateWindow'Env env = do
+  w <- updateWindow $ window env
+  return env { window = w }
 
-  let inp = input $ cWindow env
-  mouseInfo <- readIORef $ I.mouses inp
-  keysDown  <- readIORef $ I.keys   inp
+updateCamera'Env :: Env -> IO Env
+updateCamera'Env env = do
+  c <- updateCamera env (camera env)
+  return env { camera = c }
 
-  let c = updateCamera keysDown (deltaTime env * 5) $ envCamera env
-  let w = handler $ cWindow env
+updateCamera :: Env -> Camera -> IO Camera
+updateCamera env =
+  onPressed (input $ window env) $
+    \k c ->
+      let speed = cameraSpeed env 5 in
+      case k of
+        GLFW.Key'W -> c { cameraPos = cameraPos c + 
+          ( cameraFront c L.^* speed ) }
+        GLFW.Key'S -> c { cameraPos = cameraPos c - 
+          ( cameraFront c L.^* speed ) }
+        GLFW.Key'A -> c { cameraPos = cameraPos c -
+          ( speed L.*^ L.cross (cameraFront c) (cameraUp c) |> L.normalize ) }
+        GLFW.Key'D -> c { cameraPos = cameraPos c + 
+          ( speed L.*^ L.cross (cameraFront c) (cameraUp c) |> L.normalize ) }
+        _ -> c
 
-  mouseDown <- GLFW.getMouseButton w GLFW.MouseButton'1
-  case mouseDown of
-    GLFW.MouseButtonState'Pressed  -> do
-      GLFW.setCursorInputMode w GLFW.CursorInputMode'Disabled
-      return $ c { cameraFront = frontVec mouseInfo }
-    GLFW.MouseButtonState'Released -> do
-      GLFW.setCursorInputMode w GLFW.CursorInputMode'Normal
-      return c
-
-mainEnv :: IO (Maybe Env)
-mainEnv = do
-  m <- makeWindow $ VideoMode 1080 720 "Demo"
-  contextualizeWindow m
-
+cameraSpeed :: Env -> Float -> Float
+cameraSpeed env speed = speed * A.deltaTime (time env)
 
 onFinish :: Env -> IO ()
 onFinish env = do
-  close $ cShader env
+  close $ shader env
   close $ vbo env
   -- close $ ebo env
   deleteVao $ vao env
-  destroy $ cWindow env
+  destroy $ window env
+
+mainEnv :: IO (Maybe Env)
+mainEnv = do
+  createWindow (VideoMode 1080 720 "Demo") >>= contextualizeWindow
 
 contextualizeWindow :: Maybe Window -> IO (Maybe Env)
 contextualizeWindow Nothing = return Nothing
@@ -192,23 +187,10 @@ contextualizeWindow (Just window_) = do
     vao_ vbo_  ebo_
     texture_
     camera
-    0 0
-
-contextualEnv :: Maybe Env -> IO ()
-contextualEnv Nothing = return ()
-contextualEnv (Just env) = do
-  closeCallback $ cWindow env
-  A.run env mainHandler onFinish
-
-handleError :: IO ()
-handleError = do
-  e <- glGetError
-  case e of
-    GL_NO_ERROR -> return ()
-    _ -> putStrLn "Error with opengl."
+    ( A.Time 0 0 0 )
 
 run :: IO ()
 run = do
   A.initApp
-  maybeEnv <- mainEnv
-  contextualEnv maybeEnv
+  mainEnv >>= contextualEnv
+

@@ -1,7 +1,7 @@
 module Rhea.Graphics.Window
   ( Window(..)
   , VideoMode(..)
-  , makeWindow
+  , createWindow
   , destroy
   , swap
   , closeCallback
@@ -9,13 +9,12 @@ module Rhea.Graphics.Window
   ) where
 
 import qualified Graphics.UI.GLFW as GLFW
-import Control.Monad
 import System.Exit ( exitSuccess )
 import Data.IORef
-import Data.Set (Set)
 import qualified Data.Set as S
 import qualified Rhea.Input.Input as I
 import Linear
+import Rhea.Input.Input
 import Rhea.Input.Mouse
 
 data VideoMode = VideoMode
@@ -30,17 +29,17 @@ data Window = Window
   , input     :: I.Input
   }
 
-makeWindow :: VideoMode -> IO (Maybe Window)
-makeWindow mode = do
+createWindow :: VideoMode -> IO (Maybe Window)
+createWindow mode = do
   maybeHandler <- GLFW.createWindow (width mode) (height mode) (title mode) Nothing Nothing
   GLFW.makeContextCurrent maybeHandler
   case maybeHandler of
     Just h -> do
-      keyRef <- newIORef S.empty
+      keyPRef <- newIORef S.empty
+      keyRRef <- newIORef S.empty
       mouseRef <- newIORef $ MouseInfo Nothing (0, -90) (V3 0 0 (-1))
-      GLFW.setCursorPosCallback h (Just $ cursorPosCallback mouseRef)
-      GLFW.setKeyCallback h (Just $ callback keyRef)
-      return $ Just $ Window h mode (I.Input keyRef mouseRef)
+      GLFW.setKeyCallback h $ Just $ callback keyPRef keyRRef
+      return $ Just $ Window h mode $ I.Input keyPRef keyRRef
     Nothing -> return Nothing
 
 destroy :: Window -> IO ()
@@ -74,13 +73,3 @@ closeCallback window =
         )
     )
 
-callback :: IORef (Set GLFW.Key) -> GLFW.KeyCallback
-callback ref window key scanCode keyState modKeys = do
-  -- putStrLn $ show keyState ++ " " ++ show key
-  case keyState of
-    GLFW.KeyState'Pressed  -> modifyIORef ref (S.insert key)
-    GLFW.KeyState'Released -> modifyIORef ref (S.delete key)
-    _ -> return ()
-  when
-    (key == GLFW.Key'Escape && keyState == GLFW.KeyState'Pressed)
-    (GLFW.setWindowShouldClose window True)

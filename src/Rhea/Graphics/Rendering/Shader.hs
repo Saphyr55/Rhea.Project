@@ -2,17 +2,28 @@
 {-# OPTIONS_GHC -Wno-orphans #-}
 
 module Rhea.Graphics.Rendering.Shader
-  ( createShader,
-    useShader,
-    uniform,
-    close,
-    updateUniform,
+  ( createShader
+  , useShader
+  , uniform
+  , close
+  , updateUniform
+  , defaultShader
   ) where
 
 import qualified Rhea.Graphics.OpenGL.Shader as GL
 import qualified Rhea.Graphics.OpenGL.Uniform as U
 import Rhea.Graphics.Rendering.ShaderType
 import Rhea.Core.Closeable
+import Rhea.Core.Resources
+
+defaultShader :: IO Shader
+defaultShader = do
+  resVert <- readResource "/Shaders/Default.vert"
+  resFrag <- readResource "/Shaders/Default.frag"
+  createShader
+    [ (VertexShader, resVert),
+      (FragmentShader, resFrag)
+    ]
 
 createShader :: [ShaderInfo] -> IO Shader
 createShader = GL.createShader

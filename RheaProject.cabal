@@ -33,6 +33,7 @@ library
       Rhea.Core.Application
       Rhea.Core.Closeable
       Rhea.Core.Common
+      Rhea.Core.Handler
       Rhea.Core.Resources
       Rhea.Graphics.Camera
       Rhea.Graphics.Color

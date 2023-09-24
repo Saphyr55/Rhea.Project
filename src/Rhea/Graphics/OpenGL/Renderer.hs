@@ -5,8 +5,8 @@ module Rhea.Graphics.OpenGL.Renderer
   , clear
   ) where
     
-import Rhea.Graphics.Color (Color, alpha, blue, green, red)
-import Rhea.Graphics.Window (VideoMode (..), Window (..))
+import Rhea.Graphics.Color ( Color, alpha, blue, green, red)
+import Rhea.Graphics.Window ( VideoMode (..), Window (..) )
 import Graphics.GL
 import Data.Bits
 
@@ -30,8 +30,6 @@ clearColor c =
 
 clear :: IO ()
 clear = 
-    glClear $ 
-        GL_COLOR_BUFFER_BIT .|.
-        GL_DEPTH_BUFFER_BIT 
-        
-
+  glClear $
+    GL_COLOR_BUFFER_BIT .|.
+    GL_DEPTH_BUFFER_BIT 
