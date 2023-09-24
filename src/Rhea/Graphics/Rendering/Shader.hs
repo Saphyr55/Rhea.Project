@@ -40,9 +40,9 @@ updateUniform'Location :: UniformLocation -> Uniform -> IO ()
 updateUniform'Location = U.updateUniform'
 
 updateUniform :: Shader -> Uniform -> IO ()
-updateUniform shader uni@(Uniform3f name _) = updateUniform' shader name uni
-updateUniform shader uni@(Uniform4f name _) = updateUniform' shader name uni
-updateUniform shader uni@(Uniform1i name _) = updateUniform' shader name uni
+updateUniform shader uni@(Uniform3f name _)       = updateUniform' shader name uni
+updateUniform shader uni@(Uniform4f name _)       = updateUniform' shader name uni
+updateUniform shader uni@(Uniform1i name _)       = updateUniform' shader name uni
 updateUniform shader uni@(UniformMatrix4f name _) = updateUniform' shader name uni
 
 updateUniform' :: Shader -> String -> Uniform -> IO ()

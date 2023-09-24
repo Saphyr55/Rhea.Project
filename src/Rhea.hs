@@ -3,6 +3,7 @@ module Rhea
     ) where
 
 import qualified Rhea.Core.Application as A
+import Rhea.Input.Input
 import Rhea.Core.Common
 import Rhea.Graphics.Image
 import Rhea.Graphics.Window
@@ -16,11 +17,11 @@ import Rhea.Graphics.Rendering.ShaderType
 import Rhea.Graphics.Camera
 import Graphics.GL
 import qualified Linear as L
-import Linear ( V3(..) )
+import Linear
 import qualified Graphics.UI.GLFW as GLFW
 import Control.Monad
-import Data.Word
-import Rhea.Input.Input
+import Data.IORef
+import Rhea.Input.Mouse (MouseInfo(frontVec))
 
 type VEBObject =
   (VertexArray, Buffer, Buffer)
@@ -30,36 +31,69 @@ data Env = Env
   , shader     :: Shader
   , vao        :: VertexArray
   , vbo        :: Buffer
-  , ebo        :: Buffer
   , texture    :: Texture
   , camera     :: Camera
   , time       :: A.Time
   }
 
-verticies :: [Float]
-verticies =
-  [  0.5,  0.5, 0.0,  1.0, 0.0, 0.0,  1.0, 1.0,  -- top right
-     0.5, -0.5, 0.0,  0.0, 1.0, 0.0,  1.0, 0.0,  -- bottom right
-    -0.5, -0.5, 0.0,  0.0, 0.0, 1.0,  0.0, 0.0,  -- bottom left
-    -0.5,  0.5, 0.0,  1.0, 1.0, 0.0,  0.0, 1.0   -- top left
-  ]
+cameraSpeed :: Float
+cameraSpeed = 3.9
 
-indices :: [Word64]
-indices =
-  [ 0, 1, 3,   -- first triangle
-    1, 2, 3    -- second triangle
-  ]
+updateEnv'Time :: (Functor f) => (A.Time -> f A.Time) -> Env -> f Env
+updateEnv'Time f env = (\v -> env {time = v}) <$> f (time env)
+
+updateEnv'Window :: (Functor f) => (Window -> f Window) -> Env -> f Env
+updateEnv'Window f env = (\v -> env {window = v}) <$> f (window env)
+
+updateEnv'Camera'ByKey :: Env -> IO Env
+updateEnv'Camera'ByKey env = (\v -> env {camera = v}) <$>
+  updateCamera env (camera env)
+
+updateEnv'Camera'ByMouse :: Env -> IO Env
+updateEnv'Camera'ByMouse env = (\mi -> 
+  env { camera = ( camera env ) { cameraFront = frontVec mi } }
+  ) <$> readIORef (mouseInfo $ input $ window env)
+
+updateCamera :: Env -> Camera -> IO Camera
+updateCamera env =
+  onPressed'Key (input $ window env) $
+    \k c ->
+      let speed = cameraSpeed * A.deltaTime (time env) in
+      case k of
+        GLFW.Key'W -> c { cameraPos = cameraPos c +
+          ( cameraFront c L.^* speed ) }
+        GLFW.Key'S -> c { cameraPos = cameraPos c -
+          ( cameraFront c L.^* speed ) }
+        GLFW.Key'A -> c { cameraPos = cameraPos c -
+          ( speed L.*^ L.cross (cameraFront c) (cameraUp c) |> L.normalize ) }
+        GLFW.Key'D -> c { cameraPos = cameraPos c +
+          ( speed L.*^ L.cross (cameraFront c) (cameraUp c) |> L.normalize ) }
+        _ -> c
+
+toogleMouseInput :: Env -> IO Env
+toogleMouseInput env = do
+  onPressed'Key (input $ window env) 
+    (\key e -> case key of
+      GLFW.Key'A ->
+        let _ = print "key" in e
+      GLFW.Key'T  -> 
+        let _ = print "key" in e
+      _ -> 
+        let _ = print key in e
+    ) env
 
 contextualEnv :: Maybe Env -> IO ()
 contextualEnv Nothing = return ()
 contextualEnv (Just env) = do
-  closeCallback $ window env
+  window env |> closeCallback
   A.run
-    env ( updateTime'Start
-      >=> render'Env
-      >=> updateWindow'Env
-      >=> updateCamera'Env
-      >=> updateTime'End
+    env ( updateEnv'Time A.updateTime'Start
+      >=> renderEnv
+      >=> updateEnv'Camera'ByKey
+      >=> toogleMouseInput
+      >=> updateEnv'Camera'ByMouse
+      >=> updateEnv'Window updateWindow
+      >=> updateEnv'Time A.updateTime'End
       ) onFinish
 
 genVertecies :: IO VEBObject
@@ -67,94 +101,48 @@ genVertecies = do
 
   vao_ <- makeVertexArray
   vbo_ <- makeVertexBuffer cubes
-  -- ebo_ <- makeElementBuffer indices
 
   linkBuffer vbo_ 0 3 (floatSize * 5) (floatSize * 0)
   linkBuffer vbo_ 2 2 (floatSize * 5) (floatSize * 3)
 
   return (vao_, vbo_, undefined)
 
-render'Env :: Env -> IO Env
-render'Env env@(Env window shader vao vbo ebo texture camera time) = do
+renderEnv :: Env -> IO Env
+renderEnv env@(Env window shader vao _ texture camera _) = do
 
   clear
   clearColor Charcoal
 
-  let uu'Partial = updateUniform shader
-
   let (VideoMode windowWidth windowHeight _) = videoMode window
-
   let model       = L.mkTransformation (L.axisAngle (V3 0.5 1 0) 1) (V3 0 0 0)
   let view        = cameraView camera
   let projection  = L.perspective 45.0 ( realToFrac windowWidth / realToFrac windowHeight ) 0.1 100.0
 
   useShader shader
-
-  uu'Partial $ UniformMatrix4f "projection" projection
-  uu'Partial $ UniformMatrix4f "view"       view
-  uu'Partial $ UniformMatrix4f "model"      model
-  uu'Partial $ Uniform1i "uTexture" (fromIntegral $ textureSlot texture)
+  updateUniform shader |> forM_
+    [ UniformMatrix4f "projection" projection
+    , UniformMatrix4f "view" view
+    , UniformMatrix4f "model" model
+    , Uniform1i "uTexture" (fromIntegral $ textureSlot texture)
+    ]
 
   bindTexture texture
 
   bindVao vao
-
   glDrawArrays GL_TRIANGLES 0 36
 
   unbindVao
-
   unbindTexture
 
   swap window
-
   viewport window
 
   return env
-
-updateTime'Start :: Env -> IO Env
-updateTime'Start env = do
-  t <- A.updateTime'Start $ time env
-  return env {time = t}
-
-updateTime'End :: Env -> IO Env
-updateTime'End env = do
-  t <- A.updateTime'End $ time env
-  return env {time = t}
-
-updateWindow'Env :: Env -> IO Env
-updateWindow'Env env = do
-  w <- updateWindow $ window env
-  return env { window = w }
-
-updateCamera'Env :: Env -> IO Env
-updateCamera'Env env = do
-  c <- updateCamera env (camera env)
-  return env { camera = c }
-
-updateCamera :: Env -> Camera -> IO Camera
-updateCamera env =
-  onPressed (input $ window env) $
-    \k c ->
-      let speed = cameraSpeed env 5 in
-      case k of
-        GLFW.Key'W -> c { cameraPos = cameraPos c + 
-          ( cameraFront c L.^* speed ) }
-        GLFW.Key'S -> c { cameraPos = cameraPos c - 
-          ( cameraFront c L.^* speed ) }
-        GLFW.Key'A -> c { cameraPos = cameraPos c -
-          ( speed L.*^ L.cross (cameraFront c) (cameraUp c) |> L.normalize ) }
-        GLFW.Key'D -> c { cameraPos = cameraPos c + 
-          ( speed L.*^ L.cross (cameraFront c) (cameraUp c) |> L.normalize ) }
-        _ -> c
-
-cameraSpeed :: Env -> Float -> Float
-cameraSpeed env speed = speed * A.deltaTime (time env)
 
 onFinish :: Env -> IO ()
 onFinish env = do
   close $ shader env
   close $ vbo env
-  -- close $ ebo env
   deleteVao $ vao env
   destroy $ window env
 
@@ -168,7 +156,7 @@ contextualizeWindow (Just window_) = do
 
   enable
 
-  (vao_, vbo_, ebo_) <- genVertecies
+  (vao_, vbo_, _) <- genVertecies
 
   shader_ <- defaultShader
 
@@ -184,7 +172,7 @@ contextualizeWindow (Just window_) = do
   return $ Just $ Env
     window_
     shader_
-    vao_ vbo_  ebo_
+    vao_ vbo_
     texture_
     camera
     ( A.Time 0 0 0 )

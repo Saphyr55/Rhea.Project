@@ -1,8 +1,8 @@
 module Rhea.Input.Input
   ( Input(..)
   , callback
-  , isPressed
-  , onPressed
+  , isPressed'Key
+  , onPressed'Key
   ) where
 
 import qualified Graphics.UI.GLFW as GLFW
@@ -10,18 +10,22 @@ import qualified Data.Set as S
 import Data.Set (Set)
 import Data.IORef
 import Control.Monad
+import Rhea.Input.Mouse (MouseInfo)
 
 data Input = Input
-  { keysPressed  :: IORef (Set GLFW.Key)
-  , keysReleased :: IORef (Set GLFW.Key)
+  { keysPressed    :: IORef (Set GLFW.Key)
+  , keysReleased   :: IORef (Set GLFW.Key)
+  , mousesPressed  :: IORef (Set GLFW.MouseButton)
+  , mousesReleased :: IORef (Set GLFW.MouseButton)
+  , mouseInfo      :: IORef MouseInfo
   }
 
-isPressed :: Input -> GLFW.Key -> IO Bool
-isPressed input key =
+isPressed'Key :: Input -> GLFW.Key -> IO Bool
+isPressed'Key input key =
   S.member key <$> readIORef (keysPressed input)
 
-onPressed :: Input -> (GLFW.Key -> b -> b) -> b -> IO b
-onPressed input f b =
+onPressed'Key :: Input -> (GLFW.Key -> b -> b) -> b -> IO b
+onPressed'Key input f b =
   S.foldr f b <$> readIORef (keysPressed input)
 
 callback :: IORef (Set GLFW.Key) -> IORef (Set GLFW.Key) -> GLFW.KeyCallback

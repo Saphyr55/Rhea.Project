@@ -6,21 +6,23 @@ module Rhea.Graphics.Window
   , swap
   , closeCallback
   , updateWindow
+  , enableInputMode
+  , disableInputMode
   ) where
 
+
+import Rhea.Input.Mouse
+import qualified Rhea.Input.Input as I
 import qualified Graphics.UI.GLFW as GLFW
 import System.Exit ( exitSuccess )
 import Data.IORef
 import qualified Data.Set as S
-import qualified Rhea.Input.Input as I
 import Linear
-import Rhea.Input.Input
-import Rhea.Input.Mouse
 
 data VideoMode = VideoMode
   { width  :: Int
   , height :: Int
-  , title  :: String 
+  , title  :: String
   } deriving ( Show )
 
 data Window = Window
@@ -31,15 +33,33 @@ data Window = Window
 
 createWindow :: VideoMode -> IO (Maybe Window)
 createWindow mode = do
+
   maybeHandler <- GLFW.createWindow (width mode) (height mode) (title mode) Nothing Nothing
   GLFW.makeContextCurrent maybeHandler
+
   case maybeHandler of
     Just h -> do
+
       keyPRef <- newIORef S.empty
       keyRRef <- newIORef S.empty
-      mouseRef <- newIORef $ MouseInfo Nothing (0, -90) (V3 0 0 (-1))
-      GLFW.setKeyCallback h $ Just $ callback keyPRef keyRRef
-      return $ Just $ Window h mode $ I.Input keyPRef keyRRef
+      buttonPRef <- newIORef S.empty
+      buttonRRef <- newIORef S.empty
+      mouseRef <- newIORef
+        $ MouseInfo Nothing (0, -90) (V3 0 0 (-1))
+
+      GLFW.setKeyCallback h
+        $ Just
+        $ I.callback keyPRef keyRRef
+
+      GLFW.setCursorPosCallback h 
+        $ Just 
+        $ mouseCallback mouseRef
+
+      return
+        $ Just
+        $ Window h mode
+        $ I.Input keyPRef keyRRef buttonPRef buttonRRef mouseRef
+
     Nothing -> return Nothing
 
 destroy :: Window -> IO ()
@@ -51,15 +71,13 @@ swap window =
   GLFW.swapBuffers $ handler window
 
 updateWindow :: Window -> IO Window
-updateWindow window = do
-  (w, h) <- GLFW.getWindowSize $ handler window
-  return
-    $ Window (handler window)
-    ( VideoMode w h
-    $ title
-    $ videoMode window )
-    (input window)
-
+updateWindow window = (\(w, h) -> 
+    window { 
+      videoMode = (videoMode window)
+        { width = w
+        , height = h } })
+  <$> GLFW.getWindowSize (handler window)
+ 
 closeCallback :: Window -> IO ()
 closeCallback window =
   GLFW.setWindowCloseCallback
@@ -73,3 +91,10 @@ closeCallback window =
         )
     )
 
+enableInputMode :: Window -> IO ()
+enableInputMode w =
+  GLFW.setCursorInputMode (handler w)  GLFW.CursorInputMode'Normal
+
+disableInputMode :: Window -> IO ()
+disableInputMode w =
+  GLFW.setCursorInputMode (handler w) GLFW.CursorInputMode'Disabled
